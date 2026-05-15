@@ -8,10 +8,11 @@ import {
   StandardFonts,
   rgb,
 } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 import type { CustomBlock, CustomTextBlock, PDFField } from './types';
 
 // ---------------------------------------------------------------------------
-// CJK font support — fetch from CDN once, cache for subsequent calls
+// CJK font support — loaded from local /fonts/ once, cached afterwards
 // ---------------------------------------------------------------------------
 
 let cjkFontBytes: Uint8Array | null = null;
@@ -19,12 +20,15 @@ let cjkFontBytes: Uint8Array | null = null;
 async function fetchCJKFont(): Promise<Uint8Array | null> {
   if (cjkFontBytes) return cjkFontBytes;
 
-  const urls = [
-    // jsdelivr (Noto Sans TC from GitHub release)
-    'https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/OTF/TraditionalChinese/NotoSansTC-Regular.otf',
+  // Try each source in order until one succeeds
+  const sources = [
+    // 1) Local font bundled with the app
+    '/fonts/NotoSansTC-Regular.ttf',
+    // 2) Google Fonts direct gstatic URL
+    'https://fonts.gstatic.com/s/notosanstc/v39/-nFuOG829Oofr2wohFbTp9ifNAn722rq0MXz76Cy_Co.ttf',
   ];
 
-  for (const url of urls) {
+  for (const url of sources) {
     try {
       const res = await fetch(url);
       if (res.ok) {
@@ -32,9 +36,34 @@ async function fetchCJKFont(): Promise<Uint8Array | null> {
         return cjkFontBytes;
       }
     } catch {
-      // try next URL
+      // try next source
     }
   }
+
+  // 3) Fallback: Google Fonts CSS API — dynamically discover font URL
+  try {
+    const cssRes = await fetch(
+      'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400'
+    );
+    if (cssRes.ok) {
+      const css = await cssRes.text();
+      const match = css.match(/url\(([^)]+)\)/);
+      if (match) {
+        const fontUrl = match[1];
+        const fontRes = await fetch(fontUrl);
+        if (fontRes.ok) {
+          cjkFontBytes = new Uint8Array(await fontRes.arrayBuffer());
+          return cjkFontBytes;
+        }
+      }
+    }
+  } catch {
+    // fall through
+  }
+
+  console.warn(
+    '[pdfUtils] 無法載入 CJK 字型，中文文字將使用 Helvetica（僅支援 Latin 字元）'
+  );
   return null;
 }
 
@@ -110,9 +139,10 @@ export async function embedCustomBlocks(
     const bytes = await fetchCJKFont();
     if (bytes) {
       try {
+        pdfDoc.registerFontkit(fontkit);
         cjkFont = await pdfDoc.embedFont(bytes);
-      } catch {
-        // fall through to standard font below
+      } catch (e) {
+        console.warn('[pdfUtils] CJK 字型嵌入失敗，降級至 Helvetica:', e);
       }
     }
   }
