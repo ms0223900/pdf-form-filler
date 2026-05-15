@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { db } from '@/lib/db';
@@ -8,7 +8,7 @@ import { detectFormFields } from '@/lib/pdfUtils';
 import type { PDFDocument, PDFField } from '@/lib/types';
 import { ExportButton } from '@/components/ExportButton';
 import { useCustomBlocks } from '@/hooks/useCustomBlocks';
-import { ArrowLeft, FileWarning, Type } from 'lucide-react';
+import { ArrowLeft, FileWarning, Image, Type } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -45,11 +45,14 @@ export default function FillPage() {
     blocks,
     selectedId,
     addTextBlock,
+    addImageBlock,
     updateBlock,
     removeBlock,
     selectBlock,
     getBlocksByPage,
   } = useCustomBlocks();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const id = Number(params.id);
@@ -136,6 +139,30 @@ export default function FillPage() {
     addTextBlock(currentPage, size.width, size.height);
   }, [currentPage, pageSizes, addTextBlock]);
 
+  const handleAddImageClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleImageFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const imageType = file.type === 'image/png' ? 'png' : 'jpeg';
+        const size = pageSizes[currentPage] || { width: 612, height: 792 };
+        addImageBlock(currentPage, size.width, size.height, dataUrl, imageType);
+      };
+      reader.readAsDataURL(file);
+
+      // Reset input so re-selecting the same file triggers onChange
+      e.target.value = '';
+    },
+    [currentPage, pageSizes, addImageBlock]
+  );
+
   const handleMeasureOffset = useCallback(
     (id: string, offsetX: number, offsetY: number) => {
       updateBlock(id, { textOffsetX: offsetX, textOffsetY: offsetY });
@@ -200,6 +227,24 @@ export default function FillPage() {
           <Type className="size-4" />
           新增文字
         </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAddImageClick}
+          className="gap-1"
+        >
+          <Image className="size-4" />
+          新增圖片
+        </Button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg"
+          className="hidden"
+          onChange={handleImageFileChange}
+        />
 
         <ExportButton
           fileBlob={pdf.fileData}

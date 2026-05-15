@@ -1,5 +1,6 @@
 import {
   PDFDocument,
+  PDFFont,
   PDFTextField,
   PDFCheckBox,
   PDFRadioGroup,
@@ -7,7 +8,48 @@ import {
   StandardFonts,
   rgb,
 } from 'pdf-lib';
-import type { CustomBlock, PDFField } from './types';
+import type { CustomBlock, CustomTextBlock, PDFField } from './types';
+
+// ---------------------------------------------------------------------------
+// CJK font support — fetch from CDN once, cache for subsequent calls
+// ---------------------------------------------------------------------------
+
+let cjkFontBytes: Uint8Array | null = null;
+
+async function fetchCJKFont(): Promise<Uint8Array | null> {
+  if (cjkFontBytes) return cjkFontBytes;
+
+  const urls = [
+    // jsdelivr (Noto Sans TC from GitHub release)
+    'https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/OTF/TraditionalChinese/NotoSansTC-Regular.otf',
+  ];
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        cjkFontBytes = new Uint8Array(await res.arrayBuffer());
+        return cjkFontBytes;
+      }
+    } catch {
+      // try next URL
+    }
+  }
+  return null;
+}
+
+function needsCJK(text: string): boolean {
+  return /[^\x00-\x7F]/.test(text);
+}
+
+function hexToRgb(hex: string) {
+  const clean = hex.replace('#', '');
+  return {
+    r: parseInt(clean.slice(0, 2), 16) / 255,
+    g: parseInt(clean.slice(2, 4), 16) / 255,
+    b: parseInt(clean.slice(4, 6), 16) / 255,
+  };
+}
 
 export async function detectFormFields(blob: Blob): Promise<PDFField[]> {
   const arrayBuffer = await blob.arrayBuffer();
@@ -57,7 +99,25 @@ export async function embedCustomBlocks(
   pdfDoc: PDFDocument,
   blocks: CustomBlock[]
 ): Promise<void> {
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  // Separate text blocks so we can decide whether a CJK font is needed
+  const textBlocks = blocks.filter(
+    (b): b is CustomTextBlock => b.type === 'text'
+  );
+  const needsCjkFont = textBlocks.some((b) => needsCJK(b.text));
+
+  let cjkFont: PDFFont | null = null;
+  if (needsCjkFont) {
+    const bytes = await fetchCJKFont();
+    if (bytes) {
+      try {
+        cjkFont = await pdfDoc.embedFont(bytes);
+      } catch {
+        // fall through to standard font below
+      }
+    }
+  }
+
+  const fallbackFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const pages = pdfDoc.getPages();
 
   for (const block of blocks) {
@@ -65,14 +125,16 @@ export async function embedCustomBlocks(
     if (!page) continue;
 
     if (block.type === 'text') {
+      const font = (needsCJK(block.text) && cjkFont) ? cjkFont : fallbackFont;
       const textOffsetX = block.textOffsetX ?? 0;
       const textOffsetY = block.textOffsetY ?? 0;
+      const { r, g, b } = hexToRgb(block.color);
       page.drawText(block.text, {
         x: block.x + textOffsetX,
         y: block.y + block.height - textOffsetY - block.fontSize * 0.8,
         size: block.fontSize,
         font,
-        color: rgb(0, 0, 0),
+        color: rgb(r, g, b),
         maxWidth: block.width,
       });
     } else if (block.type === 'image') {

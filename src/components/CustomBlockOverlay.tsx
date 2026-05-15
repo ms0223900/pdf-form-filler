@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import type { CustomBlock, CustomTextBlock } from '@/lib/types';
 import { TextBlock } from './TextBlock';
+import { ImageBlock } from './ImageBlock';
 import { useDragResize } from '@/hooks/useDragResize';
 
 interface CustomBlockOverlayProps {
@@ -71,6 +72,21 @@ export function CustomBlockOverlay({
               onRemove={onRemoveBlock}
               onDragMouseDown={handleMouseDown}
               onMeasureOffset={onMeasureOffset}
+            />
+          );
+        }
+        if (block.type === 'image') {
+          return (
+            <ImageBlock
+              key={block.id}
+              block={block}
+              selected={block.id === selectedId}
+              scale={scale}
+              pageHeight={pageHeight}
+              onSelect={onSelectBlock}
+              onUpdate={onUpdateBlock}
+              onRemove={onRemoveBlock}
+              onDragMouseDown={handleMouseDown}
             />
           );
         }

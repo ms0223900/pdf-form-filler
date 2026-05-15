@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { CustomBlock, CustomTextBlock } from '@/lib/types';
+import type { CustomBlock, CustomTextBlock, CustomImageBlock } from '@/lib/types';
 
 export function useCustomBlocks() {
   const [blocks, setBlocks] = useState<CustomBlock[]>([]);
@@ -41,6 +41,31 @@ export function useCustomBlocks() {
     []
   );
 
+  const addImageBlock = useCallback(
+    (
+      page: number,
+      pageWidth: number,
+      pageHeight: number,
+      imageData: string,
+      imageType: 'png' | 'jpeg'
+    ) => {
+      const block: CustomImageBlock = {
+        id: crypto.randomUUID(),
+        type: 'image',
+        page,
+        x: pageWidth / 2 - 80,
+        y: pageHeight / 2 - 40,
+        width: 160,
+        height: (160 * 3) / 4, // 4:3 default aspect
+        imageData,
+        imageType,
+      };
+      addBlock(block);
+      return block;
+    },
+    [addBlock]
+  );
+
   const removeBlock = useCallback((id: string) => {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
     setSelectedId((prev) => (prev === id ? null : prev));
@@ -60,6 +85,7 @@ export function useCustomBlocks() {
     selectedId,
     addBlock,
     addTextBlock,
+    addImageBlock,
     updateBlock,
     removeBlock,
     selectBlock,
