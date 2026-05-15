@@ -34,17 +34,17 @@ export async function detectFormFields(blob: Blob): Promise<PDFField[]> {
     if (!name) continue;
 
     if (field instanceof PDFTextField) {
-      fields.push({ name, type: 'text', required: false });
+      fields.push({ name, type: 'text', required: field.isRequired(), readOnly: field.isReadOnly() });
     } else if (field instanceof PDFCheckBox) {
-      fields.push({ name, type: 'checkbox', required: false });
+      fields.push({ name, type: 'checkbox', required: field.isRequired(), readOnly: field.isReadOnly() });
     } else if (field instanceof PDFRadioGroup) {
       const radioField = form.getRadioGroup(name);
       const options = radioField.getOptions();
-      fields.push({ name, type: 'radio', required: false, options });
+      fields.push({ name, type: 'radio', required: field.isRequired(), readOnly: field.isReadOnly(), options });
     } else if (field instanceof PDFDropdown) {
       const dropdownField = form.getDropdown(name);
       const options = dropdownField.getOptions();
-      fields.push({ name, type: 'dropdown', required: false, options });
+      fields.push({ name, type: 'dropdown', required: field.isRequired(), readOnly: field.isReadOnly(), options });
     }
   }
 

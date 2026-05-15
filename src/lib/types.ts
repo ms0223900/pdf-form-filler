@@ -15,6 +15,7 @@ export interface PDFField {
   name: string;
   type: 'text' | 'checkbox' | 'radio' | 'dropdown';
   required: boolean;
+  readOnly: boolean;
   options?: string[];
   value?: string | boolean;
 }
