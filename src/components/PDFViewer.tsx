@@ -30,7 +30,7 @@ const WORKER_URL =
   'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
 export function PDFViewer({ file, renderOverlay, onScaleChange, onPageChange: onParentPageChange }: PDFViewerProps) {
-  const url = useMemo(() => URL.createObjectURL(file), [file]);
+  const [fileData, setFileData] = useState<Uint8Array | null>(null);
   const [numPages, setNumPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [scale, setScale] = useState<number | SpecialZoomLevel>(
@@ -40,9 +40,17 @@ export function PDFViewer({ file, renderOverlay, onScaleChange, onPageChange: on
   const overlayRef = useRef(renderOverlay);
   overlayRef.current = renderOverlay;
 
+  // Read Blob into stable Uint8Array (avoids Blob URL revocation race conditions)
   useEffect(() => {
-    return () => URL.revokeObjectURL(url);
-  }, [url]);
+    let active = true;
+    setFileData(null);
+    file.arrayBuffer().then((buf) => {
+      if (active) setFileData(new Uint8Array(buf));
+    });
+    return () => {
+      active = false;
+    };
+  }, [file]);
 
   function handleDocumentLoad(e: DocumentLoadEvent) {
     setNumPages(e.doc.numPages);
@@ -152,16 +160,22 @@ export function PDFViewer({ file, renderOverlay, onScaleChange, onPageChange: on
           </div>
         </div>
 
-        {/* Viewer */}
+        {/* Viewer or loading state */}
         <div className="flex-1 overflow-auto bg-muted/30">
-          <Viewer
-            fileUrl={url}
-            initialPage={currentPage}
-            defaultScale={scale}
-            onDocumentLoad={handleDocumentLoad}
-            onPageChange={handlePageChange}
-            renderPage={renderPage}
-          />
+          {fileData ? (
+            <Viewer
+              fileUrl={fileData}
+              initialPage={currentPage}
+              defaultScale={scale}
+              onDocumentLoad={handleDocumentLoad}
+              onPageChange={handlePageChange}
+              renderPage={renderPage}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              載入中...
+            </div>
+          )}
         </div>
       </div>
     </Worker>
