@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { CustomTextBlock } from '@/lib/types';
 import { GripVertical, Trash2 } from 'lucide-react';
 
@@ -21,6 +21,7 @@ interface TextBlockProps {
     w: number,
     h: number
   ) => void;
+  onMeasureOffset?: (id: string, offsetX: number, offsetY: number) => void;
 }
 
 export function TextBlock({
@@ -32,14 +33,35 @@ export function TextBlock({
   onUpdate,
   onRemove,
   onDragMouseDown,
+  onMeasureOffset,
 }: TextBlockProps) {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const measuredRef = useRef(false);
 
   const overlayX = block.x * scale;
   const overlayY = (pageHeight - block.y - block.height) * scale;
   const overlayW = block.width * scale;
   const overlayH = block.height * scale;
+
+  // Measure text content offset from block wrapper once on mount
+  useLayoutEffect(() => {
+    if (measuredRef.current || !blockRef.current || !contentRef.current) return;
+    measuredRef.current = true;
+
+    const blockRect = blockRef.current.getBoundingClientRect();
+    const textRect = contentRef.current.getBoundingClientRect();
+
+    const cssLeft = textRect.left - blockRect.left;
+    const cssTop = textRect.top - blockRect.top;
+
+    // Convert CSS px to PDF pts using current scale
+    const pdfX = cssLeft / scale;
+    const pdfY = (cssTop + 4) / scale; // py-1 = 4px padding inside text div
+    onMeasureOffset?.(block.id, pdfX, pdfY);
+  }, [scale, block.id, onMeasureOffset]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -94,6 +116,7 @@ export function TextBlock({
 
   return (
     <div
+      ref={blockRef}
       className="group absolute"
       style={{
         left: overlayX,
@@ -141,6 +164,7 @@ export function TextBlock({
           />
         ) : (
           <div
+            ref={contentRef}
             className="flex-1 overflow-hidden px-1 py-1 break-words"
             style={{ fontSize: `${block.fontSize * scale}px` }}
           >

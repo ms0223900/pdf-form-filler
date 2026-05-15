@@ -65,9 +65,11 @@ export async function embedCustomBlocks(
     if (!page) continue;
 
     if (block.type === 'text') {
+      const textOffsetX = block.textOffsetX ?? 0;
+      const textOffsetY = block.textOffsetY ?? 0;
       page.drawText(block.text, {
-        x: block.x,
-        y: block.y,
+        x: block.x + textOffsetX,
+        y: block.y + block.height - textOffsetY - block.fontSize * 0.8,
         size: block.fontSize,
         font,
         color: rgb(0, 0, 0),

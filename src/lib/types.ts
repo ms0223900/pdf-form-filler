@@ -55,6 +55,10 @@ export interface CustomTextBlock {
   fontSize: number;
   /** Hex color e.g. '#000000' */
   color: string;
+  /** Measured offset from block left to text content left (PDF pts) */
+  textOffsetX?: number;
+  /** Measured offset from block top to text visual top (PDF pts) */
+  textOffsetY?: number;
 }
 
 export interface CustomImageBlock {

@@ -136,6 +136,13 @@ export default function FillPage() {
     addTextBlock(currentPage, size.width, size.height);
   }, [currentPage, pageSizes, addTextBlock]);
 
+  const handleMeasureOffset = useCallback(
+    (id: string, offsetX: number, offsetY: number) => {
+      updateBlock(id, { textOffsetX: offsetX, textOffsetY: offsetY });
+    },
+    [updateBlock]
+  );
+
   const handlePageChange = useCallback(
     (e: { currentPage: number }) => {
       setCurrentPage(e.currentPage);
@@ -220,6 +227,7 @@ export default function FillPage() {
                 onUpdateBlock={updateBlock}
                 onSelectBlock={selectBlock}
                 onRemoveBlock={removeBlock}
+                onMeasureOffset={handleMeasureOffset}
               />
             )}
           />

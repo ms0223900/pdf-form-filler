@@ -15,6 +15,7 @@ interface CustomBlockOverlayProps {
   onUpdateBlock: (id: string, updates: Partial<CustomBlock>) => void;
   onSelectBlock: (id: string | null) => void;
   onRemoveBlock: (id: string) => void;
+  onMeasureOffset?: (id: string, offsetX: number, offsetY: number) => void;
 }
 
 export function CustomBlockOverlay({
@@ -27,6 +28,7 @@ export function CustomBlockOverlay({
   onUpdateBlock,
   onSelectBlock,
   onRemoveBlock,
+  onMeasureOffset,
 }: CustomBlockOverlayProps) {
   const pageHeight = height / scale;
 
@@ -68,6 +70,7 @@ export function CustomBlockOverlay({
               onUpdate={onUpdateBlock}
               onRemove={onRemoveBlock}
               onDragMouseDown={handleMouseDown}
+              onMeasureOffset={onMeasureOffset}
             />
           );
         }
