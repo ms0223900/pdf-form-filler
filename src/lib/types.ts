@@ -35,3 +35,39 @@ export interface Material {
   data: PersonalInfo | SignatureData;
   createdAt: Date;
 }
+
+export interface CustomTextBlock {
+  id: string;
+  type: 'text';
+  /** 0-based page index */
+  page: number;
+  /** PDF user-space x coordinate (points from left) */
+  x: number;
+  /** PDF user-space y coordinate (points from bottom) */
+  y: number;
+  /** Width in PDF points */
+  width: number;
+  /** Height in PDF points */
+  height: number;
+  /** Text content */
+  text: string;
+  /** Font size in PDF points */
+  fontSize: number;
+  /** Hex color e.g. '#000000' */
+  color: string;
+}
+
+export interface CustomImageBlock {
+  id: string;
+  type: 'image';
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Base64 data URL */
+  imageData: string;
+  imageType: 'png' | 'jpeg';
+}
+
+export type CustomBlock = CustomTextBlock | CustomImageBlock;

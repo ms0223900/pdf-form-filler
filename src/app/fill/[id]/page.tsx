@@ -6,8 +6,11 @@ import dynamic from 'next/dynamic';
 import { db } from '@/lib/db';
 import { detectFormFields } from '@/lib/pdfUtils';
 import type { PDFDocument, PDFField } from '@/lib/types';
-import { ArrowLeft, FileWarning } from 'lucide-react';
+import { ExportButton } from '@/components/ExportButton';
+import { useCustomBlocks } from '@/hooks/useCustomBlocks';
+import { ArrowLeft, FileWarning, Type } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const PDFViewer = dynamic(
   () => import('@/components/PDFViewer').then((mod) => mod.PDFViewer),
@@ -19,6 +22,14 @@ const FormFieldPanel = dynamic(
   { ssr: false }
 );
 
+const CustomBlockOverlay = dynamic(
+  () =>
+    import('@/components/CustomBlockOverlay').then(
+      (mod) => mod.CustomBlockOverlay
+    ),
+  { ssr: false }
+);
+
 export default function FillPage() {
   const params = useParams<{ id: string }>();
   const [pdf, setPdf] = useState<PDFDocument | null>(null);
@@ -27,6 +38,18 @@ export default function FillPage() {
   const [fields, setFields] = useState<PDFField[]>([]);
   const [fieldsLoading, setFieldsLoading] = useState(false);
   const [values, setValues] = useState<Record<string, string | boolean>>({});
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSizes, setPageSizes] = useState<{ width: number; height: number }[]>([]);
+
+  const {
+    blocks,
+    selectedId,
+    addTextBlock,
+    updateBlock,
+    removeBlock,
+    selectBlock,
+    getBlocksByPage,
+  } = useCustomBlocks();
 
   useEffect(() => {
     const id = Number(params.id);
@@ -55,11 +78,32 @@ export default function FillPage() {
   useEffect(() => {
     if (!pdf) return;
 
+    // Load PDF page dimensions for custom block placement
+    (async () => {
+      try {
+        const { PDFDocument: PDFLibDoc } = await import('pdf-lib');
+        const arrayBuffer = await pdf.fileData.arrayBuffer();
+        const doc = await PDFLibDoc.load(new Uint8Array(arrayBuffer), {
+          ignoreEncryption: true,
+        });
+        const sizes = doc.getPages().map((p) => {
+          const { width, height } = p.getSize();
+          return { width, height };
+        });
+        setPageSizes(sizes);
+      } catch {
+        // Non-critical; blocks can use fallback size
+      }
+    })();
+  }, [pdf]);
+
+  useEffect(() => {
+    if (!pdf) return;
+
     setFieldsLoading(true);
     detectFormFields(pdf.fileData)
       .then((detected) => {
         setFields(detected);
-        // Init values from detected fields
         const init: Record<string, string | boolean> = {};
         for (const f of detected) {
           if (f.type === 'checkbox') {
@@ -86,6 +130,23 @@ export default function FillPage() {
     },
     []
   );
+
+  const handleAddTextBlock = useCallback(() => {
+    const size = pageSizes[currentPage] || { width: 612, height: 792 };
+    addTextBlock(currentPage, size.width, size.height);
+  }, [currentPage, pageSizes, addTextBlock]);
+
+  const handlePageChange = useCallback(
+    (e: { currentPage: number }) => {
+      setCurrentPage(e.currentPage);
+      selectBlock(null);
+    },
+    [selectBlock]
+  );
+
+  const handleViewerClick = useCallback(() => {
+    selectBlock(null);
+  }, [selectBlock]);
 
   if (loading) {
     return (
@@ -121,14 +182,47 @@ export default function FillPage() {
           <ArrowLeft className="size-4" />
           返回
         </Link>
-        <span className="text-sm font-medium">{pdf.name}</span>
+        <span className="flex-1 text-sm font-medium">{pdf.name}</span>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAddTextBlock}
+          className="gap-1"
+        >
+          <Type className="size-4" />
+          新增文字
+        </Button>
+
+        <ExportButton
+          fileBlob={pdf.fileData}
+          fileName={pdf.name}
+          values={values}
+          customBlocks={blocks}
+        />
       </div>
 
       {/* Content */}
       <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
         {/* Left: PDF Viewer */}
-        <div className="flex-1 overflow-hidden md:w-1/2">
-          <PDFViewer file={pdf.fileData} />
+        <div className="flex-1 overflow-hidden md:w-1/2" onClick={handleViewerClick}>
+          <PDFViewer
+            file={pdf.fileData}
+            onPageChange={handlePageChange}
+            renderOverlay={({ pageIndex, scale, width, height }) => (
+              <CustomBlockOverlay
+                pageIndex={pageIndex}
+                scale={scale}
+                width={width}
+                height={height}
+                blocks={blocks}
+                selectedId={selectedId}
+                onUpdateBlock={updateBlock}
+                onSelectBlock={selectBlock}
+                onRemoveBlock={removeBlock}
+              />
+            )}
+          />
         </div>
 
         {/* Right: Field Panel */}

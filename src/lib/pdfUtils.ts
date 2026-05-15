@@ -4,8 +4,10 @@ import {
   PDFCheckBox,
   PDFRadioGroup,
   PDFDropdown,
+  StandardFonts,
+  rgb,
 } from 'pdf-lib';
-import type { PDFField } from './types';
+import type { CustomBlock, PDFField } from './types';
 
 export async function detectFormFields(blob: Blob): Promise<PDFField[]> {
   const arrayBuffer = await blob.arrayBuffer();
@@ -51,9 +53,60 @@ export async function detectFormFields(blob: Blob): Promise<PDFField[]> {
   return fields;
 }
 
+export async function embedCustomBlocks(
+  pdfDoc: PDFDocument,
+  blocks: CustomBlock[]
+): Promise<void> {
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const pages = pdfDoc.getPages();
+
+  for (const block of blocks) {
+    const page = pages[block.page];
+    if (!page) continue;
+
+    if (block.type === 'text') {
+      page.drawText(block.text, {
+        x: block.x,
+        y: block.y,
+        size: block.fontSize,
+        font,
+        color: rgb(0, 0, 0),
+        maxWidth: block.width,
+      });
+    } else if (block.type === 'image') {
+      let image;
+
+      try {
+        const base64Data = block.imageData.replace(
+          /^data:image\/\w+;base64,/,
+          ''
+        );
+        if (block.imageType === 'png') {
+          image = await pdfDoc.embedPng(base64Data);
+        } else {
+          image = await pdfDoc.embedJpg(base64Data);
+        }
+      } catch (e) {
+        console.warn(`無法嵌入圖片 "${block.id}":`, e);
+        continue;
+      }
+
+      if (image) {
+        page.drawImage(image, {
+          x: block.x,
+          y: block.y,
+          width: block.width,
+          height: block.height,
+        });
+      }
+    }
+  }
+}
+
 export async function fillAndExport(
   originalBlob: Blob,
-  values: Record<string, string | boolean>
+  values: Record<string, string | boolean>,
+  customBlocks?: CustomBlock[]
 ): Promise<Blob> {
   const arrayBuffer = await originalBlob.arrayBuffer();
   const bytes = new Uint8Array(arrayBuffer);
@@ -84,6 +137,10 @@ export async function fillAndExport(
     } catch (e) {
       console.warn(`無法填入欄位 "${name}":`, e);
     }
+  }
+
+  if (customBlocks && customBlocks.length > 0) {
+    await embedCustomBlocks(pdfDoc, customBlocks);
   }
 
   const pdfBytes = await pdfDoc.save();
