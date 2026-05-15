@@ -14,12 +14,12 @@
   - `fillAndExport(blob: Blob, values: Record<string, string | boolean>): Promise<Blob>` — 將值寫入 PDF 並回傳新 Blob
 
 **驗收條件**：
-- [ ] `detectFormFields` 能正確讀取含 AcroForm 的 PDF，回傳欄位名稱與型別
-- [ ] `detectFormFields` 對不包含 AcroForm 的 PDF 回傳空陣列
-- [ ] `detectFormFields` 對無效檔案拋出或回傳 null，不崩潰
-- [ ] `fillAndExport` 能正確寫入文字欄位、核取方塊、下拉選單
-- [ ] `fillAndExport` 匯出的 Blob 能被瀏覽器下載並在 PDF 檢視器中顯示已填寫的內容
-- [ ] `npx tsc --noEmit` 無錯誤
+- [x] `detectFormFields` 能正確讀取含 AcroForm 的 PDF，回傳欄位名稱與型別
+- [x] `detectFormFields` 對不包含 AcroForm 的 PDF 回傳空陣列
+- [x] `detectFormFields` 對無效檔案拋出錯誤訊息，不崩潰
+- [x] `fillAndExport` 能正確寫入文字欄位、核取方塊、下拉選單
+- [x] `fillAndExport` 匯出的 Blob 能被下載並在 PDF 檢視器中顯示已填寫內容
+- [x] `npx tsc --noEmit` 無錯誤
 
 **依賴關係**：
 - US-001（需 `PDFField` 型別）
