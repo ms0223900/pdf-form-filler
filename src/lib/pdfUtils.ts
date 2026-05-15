@@ -1,18 +1,19 @@
+import fontkit from '@pdf-lib/fontkit';
 import {
-  PDFDocument,
-  PDFFont,
-  PDFTextField,
   PDFCheckBox,
-  PDFRadioGroup,
+  PDFDocument,
   PDFDropdown,
+  PDFFont,
+  PDFRadioGroup,
+  PDFTextField,
   StandardFonts,
   rgb,
 } from 'pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
 import type { CustomBlock, CustomTextBlock, PDFField } from './types';
 
 // ---------------------------------------------------------------------------
-// CJK font support — loaded from local /fonts/ once, cached afterwards
+// CJK font — Noto Sans TC「區域性子集」靜態 OTF（noto-cjk SubsetOTF/TC），覆蓋繁中高頻用字。
+// 若需子集外罕字，後備為 Google Fonts 完整 TTF。詳見 public/fonts/NotoSansTC-LICENSE。
 // ---------------------------------------------------------------------------
 
 let cjkFontBytes: Uint8Array | null = null;
@@ -40,7 +41,7 @@ async function fetchCJKFont(): Promise<Uint8Array | null> {
     }
   }
 
-  // 3) Fallback: Google Fonts CSS API — dynamically discover font URL
+  // Last resort: discover full Noto Sans TC TTF via Google Fonts CSS (not the subset OTF)
   try {
     const cssRes = await fetch(
       'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400'
@@ -61,9 +62,7 @@ async function fetchCJKFont(): Promise<Uint8Array | null> {
     // fall through
   }
 
-  console.warn(
-    '[pdfUtils] 無法載入 CJK 字型，中文文字將使用 Helvetica（僅支援 Latin 字元）'
-  );
+  console.warn('[pdfUtils] 無法載入 CJK 字型檔（Noto Sans TC）');
   return null;
 }
 
@@ -78,6 +77,19 @@ function hexToRgb(hex: string) {
     g: parseInt(clean.slice(2, 4), 16) / 255,
     b: parseInt(clean.slice(4, 6), 16) / 255,
   };
+}
+
+/**
+ * CJK（Noto Sans TC）務必嵌入完整字型，勿使用 `{ subset: true }`。
+ * pdf-lib + @pdf-lib/fontkit 子集編碼在某些情境（中英混排、maxWidth 換行等）
+ * 會與字型內容不一致，瀏覽器／閱讀器會出現大片缺字母或缺字形。
+ */
+async function embedCjkFont(
+  pdfDoc: PDFDocument,
+  bytes: Uint8Array
+): Promise<PDFFont> {
+  pdfDoc.registerFontkit(fontkit);
+  return pdfDoc.embedFont(bytes);
 }
 
 export async function detectFormFields(blob: Blob): Promise<PDFField[]> {
@@ -137,13 +149,16 @@ export async function embedCustomBlocks(
   let cjkFont: PDFFont | null = null;
   if (needsCjkFont) {
     const bytes = await fetchCJKFont();
-    if (bytes) {
-      try {
-        pdfDoc.registerFontkit(fontkit);
-        cjkFont = await pdfDoc.embedFont(bytes);
-      } catch (e) {
-        console.warn('[pdfUtils] CJK 字型嵌入失敗，降級至 Helvetica:', e);
-      }
+    if (!bytes) {
+      throw new Error(
+        '[pdfUtils] 無法載入中文字型（Noto Sans TC），無法匯出含非 ASCII 文字的自訂區塊。請確認 public/fonts/NotoSansTC-Regular.otf 已佈署，或裝置可連線下載官方子集／完整字型。'
+      );
+    }
+    try {
+      cjkFont = await embedCjkFont(pdfDoc, bytes);
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e);
+      throw new Error(`[pdfUtils] 中文字型嵌入失敗，無法匯出自訂文字：${detail}`);
     }
   }
 
@@ -222,7 +237,8 @@ export async function fillAndExport(
         form.getTextField(name).setText(value);
       } else if (field instanceof PDFCheckBox) {
         const cb = form.getCheckBox(name);
-        value ? cb.check() : cb.uncheck();
+        if (value) cb.check();
+        else cb.uncheck();
       } else if (field instanceof PDFRadioGroup && typeof value === 'string') {
         form.getRadioGroup(name).select(value);
       } else if (field instanceof PDFDropdown && typeof value === 'string') {
