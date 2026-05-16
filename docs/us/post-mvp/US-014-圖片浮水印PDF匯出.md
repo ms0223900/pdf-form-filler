@@ -13,13 +13,13 @@
 - 更新 `src/lib/pdfUtils.ts` 中的 `embedCustomBlocks` — 處理圖片區塊時，若 `watermark.enabled === true`，在圖片上方繪製浮水印文字
 
 **驗收條件**：
-- [ ] 圖片區塊 `watermark.enabled === true` 時，匯出的 PDF 中該圖片上方有浮水印文字
-- [ ] 浮水印文字使用與文字區塊相同的中文字型（Noto Sans TC）
-- [ ] 浮水印文字位置為圖片底部、水平置中，尺寸等比縮放
-- [ ] 浮水印文字為半透明紅色（如 `rgba(255,0,0,0.5)`）
-- [ ] `watermark.enabled === false` 或未設定時，匯出行為與既有邏輯完全相同
-- [ ] 圖片嵌入失敗時（`embedPng`/`embedJpg` 拋錯），不影響浮水印功能判斷，不額外拋錯
-- [ ] `npx tsc --noEmit` 無錯誤
+- [x] 圖片區塊 `watermark.enabled === true` 時，匯出的 PDF 中該圖片上方有浮水印文字
+- [x] 浮水印文字使用與文字區塊相同的中文字型（Noto Sans TC）
+- [x] 浮水印文字位置為圖片底部、水平置中，尺寸等比縮放
+- [x] 浮水印文字為半透明紅色（如 `rgba(255,0,0,0.5)`）
+- [x] `watermark.enabled === false` 或未設定時，匯出行為與既有邏輯完全相同
+- [x] 圖片嵌入失敗時（`embedPng`/`embedJpg` 拋錯），不影響浮水印功能判斷，不額外拋錯
+- [x] `npx tsc --noEmit` 無錯誤
 
 **依賴關係**：
 - US-013（需 `CustomImageBlock` 已含 `watermark` 欄位）

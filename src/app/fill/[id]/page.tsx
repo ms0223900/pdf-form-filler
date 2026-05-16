@@ -1,18 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { db } from '@/lib/db';
-import type { PDFDocument } from '@/lib/types';
 import { ExportButton } from '@/components/ExportButton';
 import { MaterialPanel } from '@/components/MaterialPanel';
-import { useCustomBlocks } from '@/hooks/useCustomBlocks';
 import { SignaturePadDialog } from '@/components/SignaturePadDialog';
-import { ArrowLeft, FileWarning, Image, Type } from 'lucide-react';
-import type { CustomTextBlock } from '@/lib/types';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useCustomBlocks } from '@/hooks/useCustomBlocks';
+import { db } from '@/lib/db';
+import type { CustomTextBlock, PDFDocument } from '@/lib/types';
+import { ArrowLeft, ExternalLink, FileWarning, Image, Library, Type } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const PDFViewer = dynamic(
   () => import('@/components/PDFViewer').then((mod) => mod.PDFViewer),
@@ -295,6 +294,16 @@ export default function FillPage() {
           onApplyText={handleApplyText}
           onApplyImage={handleApplyImage}
         />
+
+        <Link
+          href="/materials"
+          className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          title="管理個人資料、文字、圖片與簽名素材"
+        >
+          <Library className="size-4" />
+          素材庫管理
+          <ExternalLink className="size-4" />
+        </Link>
 
         <input
           ref={fileInputRef}

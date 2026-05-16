@@ -81,6 +81,12 @@ export interface CustomImageBlock {
   /** Base64 data URL */
   imageData: string;
   imageType: 'png' | 'jpeg';
+  /** Watermark overlay configuration */
+  watermark?: {
+    enabled: boolean;
+    /** Watermark text displayed near the bottom of the image */
+    text: string;
+  };
 }
 
 export type CustomBlock = CustomTextBlock | CustomImageBlock;

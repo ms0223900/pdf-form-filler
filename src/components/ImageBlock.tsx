@@ -1,9 +1,11 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef } from 'react';
-import type { CustomImageBlock } from '@/lib/types';
-import { GripVertical, Trash2 } from 'lucide-react';
 import { useAspectRatioResize } from '@/hooks/useAspectRatioResize';
+import type { CustomImageBlock } from '@/lib/types';
+import { Droplets, GripVertical, Trash2 } from 'lucide-react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
+
+const DEFAULT_WATERMARK_TEXT = '本證件僅供核對身分專用，複製或轉作其他用途無效';
 
 interface ImageBlockProps {
   block: CustomImageBlock;
@@ -69,6 +71,24 @@ export function ImageBlock({
     [block.id, onRemove]
   );
 
+  const handleToggleWatermark = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const current = block.watermark;
+      if (current?.enabled) {
+        onUpdate(block.id, { watermark: { ...current, enabled: false } });
+      } else {
+        onUpdate(block.id, {
+          watermark: {
+            enabled: true,
+            text: current?.text ?? DEFAULT_WATERMARK_TEXT,
+          },
+        });
+      }
+    },
+    [block.id, block.watermark, onUpdate]
+  );
+
   const handleDragStart = useCallback(
     (e: React.MouseEvent) => {
       onDragMouseDown(e, block.id, 'move', block.x, block.y, block.width, block.height);
@@ -97,17 +117,15 @@ export function ImageBlock({
     >
       {/* Block body */}
       <div
-        className={`relative flex h-full w-full overflow-hidden rounded border-2 bg-white shadow-sm ${
-          selected
+        className={`relative flex h-full w-full overflow-hidden rounded border-2 bg-white shadow-sm ${selected
             ? 'border-blue-500 shadow-md'
             : 'border-dashed border-gray-400 hover:border-gray-500'
-        }`}
+          }`}
       >
         {/* Drag handle */}
         <button
-          className={`flex shrink-0 cursor-grab items-center justify-center self-stretch bg-black/5 px-0.5 text-gray-500 active:cursor-grabbing ${
-            selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
-          }`}
+          className={`flex shrink-0 cursor-grab items-center justify-center self-stretch bg-black/5 px-0.5 text-gray-500 active:cursor-grabbing ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
+            }`}
           onMouseDown={handleDragStart}
           onClick={(e) => e.stopPropagation()}
         >
@@ -122,13 +140,44 @@ export function ImageBlock({
           className="h-full flex-1 object-contain bg-white"
           draggable={false}
         />
+
+        {/* Watermark overlay */}
+        {block.watermark?.enabled && (
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-center pointer-events-none"
+            style={{ height: '10%', minHeight: 16 }}
+          >
+            <span
+              className="text-center leading-tight font-medium truncate px-1 select-none"
+              style={{
+                color: 'rgba(255,0,0,0.5)',
+                fontSize: Math.max(6, overlayH * 0.045),
+              }}
+            >
+              {block.watermark.text}
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Watermark toggle */}
+      {selected && (
+        <button
+          className={`absolute -top-2.5 flex size-5 items-center justify-center rounded-full shadow transition-opacity ${block.watermark?.enabled
+              ? 'bg-red-400 text-white -right-9'
+              : 'bg-gray-300 text-gray-600 -right-9'
+            }`}
+          onMouseDown={handleToggleWatermark}
+          onClick={(e) => e.stopPropagation()}
+          title={block.watermark?.enabled ? '關閉浮水印' : '開啟「機密文件」浮水印'}
+        >
+          <Droplets className="size-3" />
+        </button>
+      )}
 
       {/* Delete button */}
       <button
-        className={`absolute -top-2.5 -right-2.5 flex size-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow transition-opacity hover:bg-red-600 ${
-          selected ? 'opacity-100' : 'group-hover:opacity-80'
-        }`}
+        className={`absolute -top-2.5 -right-2.5 flex size-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow transition-opacity hover:bg-red-600 ${selected ? 'opacity-100' : 'group-hover:opacity-80'
+          }`}
         onMouseDown={handleDelete}
         onClick={(e) => e.stopPropagation()}
       >
@@ -137,9 +186,8 @@ export function ImageBlock({
 
       {/* Resize handle */}
       <div
-        className={`absolute -bottom-1.5 -right-1.5 size-3 cursor-se-resize rounded-full border-2 border-blue-400 bg-white ${
-          selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
-        }`}
+        className={`absolute -bottom-1.5 -right-1.5 size-3 cursor-se-resize rounded-full border-2 border-blue-400 bg-white ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
+          }`}
         onMouseDown={handleResizeMouseDown}
         onClick={(e) => e.stopPropagation()}
       />

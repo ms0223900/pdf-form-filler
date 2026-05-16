@@ -9,7 +9,7 @@ import {
   StandardFonts,
   rgb,
 } from 'pdf-lib';
-import type { CustomBlock, CustomTextBlock, PDFField } from './types';
+import type { CustomBlock, CustomImageBlock, CustomTextBlock, PDFField } from './types';
 
 // ---------------------------------------------------------------------------
 // CJK font — Noto Sans TC「區域性子集」靜態 OTF（noto-cjk SubsetOTF/TC），覆蓋繁中高頻用字。
@@ -140,11 +140,16 @@ export async function embedCustomBlocks(
   pdfDoc: PDFDocument,
   blocks: CustomBlock[]
 ): Promise<void> {
-  // Separate text blocks so we can decide whether a CJK font is needed
+  // Determine whether a CJK font is needed (text blocks + image watermarks)
   const textBlocks = blocks.filter(
     (b): b is CustomTextBlock => b.type === 'text'
   );
-  const needsCjkFont = textBlocks.some((b) => needsCJK(b.text));
+  const imageWatermarkBlocks = blocks.filter(
+    (b): b is CustomImageBlock => b.type === 'image' && !!b.watermark?.enabled
+  );
+  const needsCjkFont =
+    textBlocks.some((b) => needsCJK(b.text)) ||
+    imageWatermarkBlocks.some((b) => b.watermark && needsCJK(b.watermark.text));
 
   let cjkFont: PDFFont | null = null;
   if (needsCjkFont) {
@@ -230,6 +235,20 @@ export async function embedCustomBlocks(
           width: drawWidth,
           height: drawHeight,
         });
+
+        // Draw watermark text if enabled
+        if (block.watermark?.enabled && cjkFont) {
+          const fontSize = Math.max(6, block.height * 0.045);
+          const textY = block.y + block.height * 0.05;
+          page.drawText(block.watermark.text, {
+            x: block.x,
+            y: textY,
+            size: fontSize,
+            font: cjkFont,
+            color: rgb(1, 0, 0),
+            maxWidth: block.width,
+          });
+        }
       }
     }
   }
