@@ -13,7 +13,10 @@
 | US-003 | 實作素材 CRUD 儲存層 | P0 | US-001 | materialStore CRUD |
 | US-006a | 實作素材庫套用面板 | P1 | US-003, US-005b | 素材側邊欄與自動填入 |
 | US-006b | 實作簽名繪製與儲存工具 | P1 | US-003, US-005b | Canvas 簽名繪製 |
-| US-008 | 實作素材管理頁面 | P1 | US-003 | 素材 CRUD 頁面 |
+| US-008a | 型別擴充 + 頁面基礎架構 | P1 | US-003, US-006a | `/materials` 頁面框架、型別擴充、MaterialPanel 更新 |
+| US-008b | 個人資料素材 CRUD | P1 | US-008a | PersonalInfoForm、CRUD |
+| US-008c | 文字 + 圖片素材 CRUD | P1 | US-008a | 文字／圖片素材新增、刪除 |
+| US-008d | 簽名素材管理（頁面端） | P1 | US-008a, US-006b | 簽名列表、刪除、整合繪製器 |
 | US-009 | 製作預設範本 PDF | P2 | US-004 | 內建範例 PDF |
 | US-013 | 擴充圖片浮水印型別與 UI | P1 | US-012 | 圖片區塊浮水印開關與渲染 |
 | US-014 | 圖片浮水印 PDF 匯出 | P1 | US-013, US-010 | 匯出時繪製浮水印 |
@@ -32,8 +35,15 @@
      │        │        │
      ├──▶ US-006a ◀────┘
      ├──▶ US-006b
-     └──▶ US-008
-                       US-009 ◀──────┘
+     │        │
+     │        ▼
+     │     US-008a（頁面框架 + 型別）
+     │        │
+     │   ┌────┼────┐
+     │   ▼    ▼    ▼
+     │ US-008b US-008c US-008d
+     │
+     └──▶ US-009
 
  MVP 第2階段（已完成）
  ┌──────────────────────────┐
@@ -52,7 +62,10 @@
 - **US-003** 依賴 US-001（需資料庫基礎），是素材功能的基礎建設
 - **US-006a** 依賴 US-003（materialStore）與 US-005b（表單欄位面板）
 - **US-006b** 依賴 US-003（materialStore）與 US-005b（canvas 相容互動）
-- **US-008** 依賴 US-003（materialStore），獨立頁面
+- **US-008a** 依賴 US-003（materialStore）與 US-006a（MaterialPanel 整合），是素材管理頁的基礎
+- **US-008b** 依賴 US-008a（需頁面框架與型別定義已就緒）
+- **US-008c** 依賴 US-008a（同上）
+- **US-008d** 依賴 US-008a（頁面框架）與 US-006b（SignaturePadDialog）
 - **US-009** 依賴 US-004（儀表板），製作靜態預設範本 PDF 檔案
 - **US-013** 依賴 US-012（ImageBlock 元件存在）與 US-010（CustomBlock 型別基礎）
 - **US-014** 依賴 US-013（需 `watermark` 欄位定義）與 US-010（匯出流程已建立）
@@ -61,10 +74,11 @@
 
 ```
 Wave 1: US-003（materialStore，其他 US 的基礎）
-Wave 2: US-008（素材管理頁）+ US-006a（素材套用）← 可平行
-Wave 3: US-006b（簽名工具）
-Wave 4: US-009（預設範本）
-Wave 5: US-013 → US-014（圖片浮水印，循序開發）
+Wave 2: US-008a（素材管理頁框架）+ US-006a（素材套用）
+Wave 3: US-008b + US-008c + US-008d（素材 CRUD，可平行）
+Wave 4: US-006b（簽名工具，若尚未實作）
+Wave 5: US-009（預設範本）
+Wave 6: US-013 → US-014（圖片浮水印，循序開發）
 ```
 
 ## 邊界（禁止事項）
