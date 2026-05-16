@@ -13,7 +13,7 @@
 | US-003 | 實作素材 CRUD 儲存層 | P0 | US-001 | materialStore CRUD |
 | US-006a | 實作素材庫套用面板 | P1 | US-003, US-005b | 素材側邊欄與自動填入 |
 | US-006b | 實作簽名繪製與儲存工具 | P1 | US-003, US-005b | Canvas 簽名繪製 |
-| US-008a | 型別擴充 + 頁面基礎架構 | P1 | US-003, US-006a | `/materials` 頁面框架、型別擴充、MaterialPanel 更新 |
+| US-008a | 型別擴充 + 頁面基礎架構 | P1 | US-003, US-006a | MaterialsManager 元件、MaterialsDialog 滿版彈窗、型別擴充 |
 | US-008b | 個人資料素材 CRUD | P1 | US-008a | PersonalInfoForm、CRUD |
 | US-008c | 文字 + 圖片素材 CRUD | P1 | US-008a | 文字／圖片素材新增、刪除 |
 | US-008d | 簽名素材管理（頁面端） | P1 | US-008a, US-006b | 簽名列表、刪除、整合繪製器 |

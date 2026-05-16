@@ -20,6 +20,7 @@ interface MaterialPanelProps {
   onApplySignature: (dataUrl: string) => void;
   onApplyText: (text: string) => void;
   onApplyImage: (dataUrl: string, imageType: 'png' | 'jpeg') => void;
+  onNavigateToManage?: () => void;
 }
 
 export function MaterialPanel({
@@ -27,6 +28,7 @@ export function MaterialPanel({
   onApplySignature,
   onApplyText,
   onApplyImage,
+  onNavigateToManage,
 }: MaterialPanelProps) {
   const [open, setOpen] = useState(false);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -102,13 +104,23 @@ export function MaterialPanel({
               <Library className="size-10" />
               <p className="text-sm">尚無素材</p>
               <p className="text-xs">新增常用的個人資料或簽名，方便快速填入 PDF</p>
-              <Link
-                href="/materials"
-                className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-2.5 py-1.5 text-[0.8rem] font-medium text-foreground hover:bg-muted hover:text-foreground"
-              >
-                <Plus className="size-4" />
-                前往新增
-              </Link>
+              {onNavigateToManage ? (
+                <button
+                  onClick={() => { setOpen(false); onNavigateToManage(); }}
+                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-2.5 py-1.5 text-[0.8rem] font-medium text-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <Plus className="size-4" />
+                  前往新增
+                </button>
+              ) : (
+                <Link
+                  href="/materials"
+                  className="inline-flex items-center justify-center rounded-lg border border-border bg-background px-2.5 py-1.5 text-[0.8rem] font-medium text-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <Plus className="size-4" />
+                  前往新增
+                </Link>
+              )}
             </div>
           ) : (
             <div className="flex flex-col gap-4">

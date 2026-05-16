@@ -2,12 +2,13 @@
 
 import { ExportButton } from '@/components/ExportButton';
 import { MaterialPanel } from '@/components/MaterialPanel';
+import { MaterialsDialog } from '@/components/MaterialsDialog';
 import { SignaturePadDialog } from '@/components/SignaturePadDialog';
 import { Button } from '@/components/ui/button';
 import { useCustomBlocks } from '@/hooks/useCustomBlocks';
 import { db } from '@/lib/db';
 import type { CustomTextBlock, PDFDocument } from '@/lib/types';
-import { ArrowLeft, ExternalLink, FileWarning, Image, Library, Type } from 'lucide-react';
+import { ArrowLeft, FileWarning, Image, Library, Type } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -33,6 +34,7 @@ export default function FillPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSizes, setPageSizes] = useState<{ width: number; height: number }[]>([]);
+  const [materialsDialogOpen, setMaterialsDialogOpen] = useState(false);
 
   const {
     blocks,
@@ -293,17 +295,22 @@ export default function FillPage() {
           onApplySignature={handleApplySignature}
           onApplyText={handleApplyText}
           onApplyImage={handleApplyImage}
+          onNavigateToManage={() => setMaterialsDialogOpen(true)}
         />
 
-        <Link
-          href="/materials"
+        <button
+          onClick={() => setMaterialsDialogOpen(true)}
           className="flex items-center gap-1 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           title="管理個人資料、文字、圖片與簽名素材"
         >
           <Library className="size-4" />
           素材庫管理
-          <ExternalLink className="size-4" />
-        </Link>
+        </button>
+
+        <MaterialsDialog
+          open={materialsDialogOpen}
+          onOpenChange={setMaterialsDialogOpen}
+        />
 
         <input
           ref={fileInputRef}
