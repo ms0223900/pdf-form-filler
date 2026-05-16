@@ -143,14 +143,13 @@ export function ImageBlock({
 
         {/* Watermark overlay */}
         {block.watermark?.enabled && (
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-center pointer-events-none"
-            style={{ height: '10%', minHeight: 16 }}
-          >
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
             <span
-              className="text-center leading-tight font-medium truncate px-1 select-none"
+              className="whitespace-nowrap select-none font-medium"
               style={{
-                color: 'rgba(255,0,0,0.5)',
-                fontSize: Math.max(6, overlayH * 0.045),
+                color: 'rgba(150,150,150,0.4)',
+                fontSize: Math.max(6, Math.sqrt(overlayW * overlayW + overlayH * overlayH) / 18),
+                transform: 'rotate(45deg)',
               }}
             >
               {block.watermark.text}

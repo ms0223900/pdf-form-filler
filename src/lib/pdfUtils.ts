@@ -7,6 +7,7 @@ import {
   PDFRadioGroup,
   PDFTextField,
   StandardFonts,
+  degrees,
   rgb,
 } from 'pdf-lib';
 import type { CustomBlock, CustomImageBlock, CustomTextBlock, PDFField } from './types';
@@ -238,15 +239,26 @@ export async function embedCustomBlocks(
 
         // Draw watermark text if enabled
         if (block.watermark?.enabled && cjkFont) {
-          const fontSize = Math.max(6, block.height * 0.045);
-          const textY = block.y + block.height * 0.05;
-          page.drawText(block.watermark.text, {
-            x: block.x,
-            y: textY,
+          const text = block.watermark.text;
+          // Estimate font size based on block short side
+          let fontSize = Math.max(4, Math.min(block.width, block.height) / 16);
+          // Measure actual text width and scale down if 45° projection exceeds block
+          const textWidth = cjkFont.widthOfTextAtSize(text, fontSize);
+          const projectedWidth = textWidth * 0.707; // cos(45°) ≈ 0.707
+          const maxWidth = block.width * 0.7;
+          if (projectedWidth > maxWidth) {
+            fontSize *= maxWidth / projectedWidth;
+          }
+          // Position at bottom-left so text crosses block diagonally
+          const padX = block.width * 0.08;
+          const padY = block.height * 0.08;
+          page.drawText(text, {
+            x: block.x + padX,
+            y: block.y + padY,
             size: fontSize,
             font: cjkFont,
-            color: rgb(1, 0, 0),
-            maxWidth: block.width,
+            color: rgb(0.6, 0.6, 0.6),
+            rotate: degrees(45),
           });
         }
       }
