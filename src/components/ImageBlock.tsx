@@ -79,7 +79,7 @@ export function ImageBlock({
 
       function handleMouseMove(me: MouseEvent) {
         const dx = (me.clientX - startX) / scale;
-        const newW = Math.max(80, startW + dx);
+        const newW = Math.max(60, startW + dx);
         const newH = newW / ratio;
         onUpdate(block.id, { width: newW, height: newH });
       }
