@@ -6,9 +6,11 @@ import dynamic from 'next/dynamic';
 import { db } from '@/lib/db';
 import type { PDFDocument } from '@/lib/types';
 import { ExportButton } from '@/components/ExportButton';
+import { MaterialPanel } from '@/components/MaterialPanel';
 import { useCustomBlocks } from '@/hooks/useCustomBlocks';
 import { SignaturePadDialog } from '@/components/SignaturePadDialog';
 import { ArrowLeft, FileWarning, Image, Type } from 'lucide-react';
+import type { CustomTextBlock } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -36,6 +38,7 @@ export default function FillPage() {
   const {
     blocks,
     selectedId,
+    addBlock,
     addTextBlock,
     addImageBlock,
     updateBlock,
@@ -147,6 +150,54 @@ export default function FillPage() {
     selectBlock(null);
   }, [selectBlock]);
 
+  const handleApplyPersonalInfo = useCallback(
+    (data: Record<string, string>) => {
+      const size = pageSizes[currentPage] || { width: 612, height: 792 };
+      const entries = Object.entries(data).filter(([, v]) => v);
+      if (entries.length === 0) return;
+
+      const labelMap: Record<string, string> = {
+        name: '姓名',
+        phone: '電話',
+        email: 'Email',
+        address: '地址',
+        taxId: '統編',
+      };
+
+      const startX = 50;
+      let startY = size.height - 80;
+      const blockH = 25;
+      const gap = 6;
+
+      for (const [key, value] of entries) {
+        const label = labelMap[key] || key;
+        const block: CustomTextBlock = {
+          id: crypto.randomUUID(),
+          type: 'text',
+          page: currentPage,
+          x: startX,
+          y: startY - blockH,
+          width: 240,
+          height: blockH,
+          text: `${label}: ${value}`,
+          fontSize: 10,
+          color: '#000000',
+        };
+        addBlock(block);
+        startY -= blockH + gap;
+      }
+    },
+    [currentPage, pageSizes, addBlock]
+  );
+
+  const handleApplySignature = useCallback(
+    (dataUrl: string) => {
+      const size = pageSizes[currentPage] || { width: 612, height: 792 };
+      addImageBlock(currentPage, size.width, size.height, dataUrl, 'png');
+    },
+    [currentPage, pageSizes, addImageBlock]
+  );
+
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
@@ -208,6 +259,11 @@ export default function FillPage() {
           pageWidth={pageSizes[currentPage]?.width ?? 612}
           pageHeight={pageSizes[currentPage]?.height ?? 792}
           onAddSignature={handleAddSignature}
+        />
+
+        <MaterialPanel
+          onApplyPersonalInfo={handleApplyPersonalInfo}
+          onApplySignature={handleApplySignature}
         />
 
         <input
