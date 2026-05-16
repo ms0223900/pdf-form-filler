@@ -51,8 +51,8 @@
 
 狀態：✅ 通過
 
-- `src/app/fill/[id]/page.tsx:194-202` 頂部工具列「新增文字」按鈕
-- `src/app/fill/[id]/page.tsx:134-137` 的 `handleAddTextBlock` 在當前頁面中心建立區塊
+- `src/app/fill/[id]/page.tsx:186-194` 頂部工具列「新增文字」按鈕
+- `src/app/fill/[id]/page.tsx:95-98` 的 `handleAddTextBlock` 在當前頁面中心建立區塊
 - 原始 AC 為點擊空白處新增，當前實作為工具列按鈕方式，行為已在 AC 註釋中說明
 
 ---

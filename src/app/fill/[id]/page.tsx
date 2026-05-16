@@ -4,22 +4,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { db } from '@/lib/db';
-import { detectFormFields } from '@/lib/pdfUtils';
-import type { PDFDocument, PDFField } from '@/lib/types';
+import type { PDFDocument } from '@/lib/types';
 import { ExportButton } from '@/components/ExportButton';
 import { useCustomBlocks } from '@/hooks/useCustomBlocks';
 import { SignaturePadDialog } from '@/components/SignaturePadDialog';
-import { ArrowLeft, FileWarning, Image, Pen, Type } from 'lucide-react';
+import { ArrowLeft, FileWarning, Image, Type } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 const PDFViewer = dynamic(
   () => import('@/components/PDFViewer').then((mod) => mod.PDFViewer),
-  { ssr: false }
-);
-
-const FormFieldPanel = dynamic(
-  () => import('@/components/FormFieldPanel').then((mod) => mod.FormFieldPanel),
   { ssr: false }
 );
 
@@ -36,9 +30,6 @@ export default function FillPage() {
   const [pdf, setPdf] = useState<PDFDocument | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [fields, setFields] = useState<PDFField[]>([]);
-  const [fieldsLoading, setFieldsLoading] = useState(false);
-  const [values, setValues] = useState<Record<string, string | boolean>>({});
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSizes, setPageSizes] = useState<{ width: number; height: number }[]>([]);
 
@@ -100,40 +91,6 @@ export default function FillPage() {
       }
     })();
   }, [pdf]);
-
-  useEffect(() => {
-    if (!pdf) return;
-
-    setFieldsLoading(true);
-    detectFormFields(pdf.fileData)
-      .then((detected) => {
-        setFields(detected);
-        const init: Record<string, string | boolean> = {};
-        for (const f of detected) {
-          if (f.type === 'checkbox') {
-            init[f.name] = false;
-          } else if (f.value !== undefined) {
-            init[f.name] = f.value;
-          } else {
-            init[f.name] = '';
-          }
-        }
-        setValues(init);
-      })
-      .catch(() => {
-        setFields([]);
-      })
-      .finally(() => {
-        setFieldsLoading(false);
-      });
-  }, [pdf]);
-
-  const handleFieldChange = useCallback(
-    (name: string, value: string | boolean) => {
-      setValues((prev) => ({ ...prev, [name]: value }));
-    },
-    []
-  );
 
   const handleAddTextBlock = useCallback(() => {
     const size = pageSizes[currentPage] || { width: 612, height: 792 };
@@ -264,15 +221,14 @@ export default function FillPage() {
         <ExportButton
           fileBlob={pdf.fileData}
           fileName={pdf.name}
-          values={values}
+          values={{}}
           customBlocks={blocks}
         />
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
-        {/* Left: PDF Viewer */}
-        <div className="flex-1 overflow-hidden md:w-1/2" onClick={handleViewerClick}>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="mx-auto w-full max-w-[1080px] flex-1 overflow-hidden" onClick={handleViewerClick}>
           <PDFViewer
             file={pdf.fileData}
             onPageChange={handlePageChange}
@@ -293,8 +249,8 @@ export default function FillPage() {
           />
         </div>
 
-        {/* Right: Field Panel */}
-        <div className="overflow-y-auto border-t bg-background md:w-1/2 md:border-t-0 md:border-l">
+        {/* Right: Field Panel (暫時隱藏) */}
+        {/* <div className="overflow-y-auto border-t bg-background md:w-1/2 md:border-t-0 md:border-l">
           {fieldsLoading ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               解析表單欄位...
@@ -306,7 +262,7 @@ export default function FillPage() {
               onChange={handleFieldChange}
             />
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );

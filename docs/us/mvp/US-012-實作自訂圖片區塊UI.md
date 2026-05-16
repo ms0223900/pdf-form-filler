@@ -47,7 +47,7 @@
 
 狀態：✅ 通過
 
-- `src/app/fill/[id]/page.tsx:205-212` 新增「新增圖片」按鈕，點擊觸發隱藏 `<input type="file" accept="image/png,image/jpeg">`
+- `src/app/fill/[id]/page.tsx:196-204` 新增「新增圖片」按鈕，點擊觸發隱藏 `<input type="file" accept="image/png,image/jpeg">`
 
 ---
 
@@ -55,7 +55,7 @@
 
 狀態：✅ 通過
 
-- `src/app/fill/[id]/page.tsx:165-180` 的 `handleImageFileChange` 使用 `FileReader.readAsDataURL` 讀取檔案，再呼叫 `addImageBlock` 建立置中區塊
+- `src/app/fill/[id]/page.tsx:104-122` 的 `handleImageFileChange` 使用 `FileReader.readAsDataURL` 讀取檔案，再呼叫 `addImageBlock` 建立置中區塊
 - `src/hooks/useCustomBlocks.ts:35-53` 的 `addImageBlock` 將區塊置於 `(pageWidth/2 - 80, pageHeight/2 - 40)`，預設 160×120（4:3）
 
 ---
@@ -99,7 +99,7 @@
 
 狀態：✅ 通過
 
-- `src/app/fill/[id]/page.tsx:170` 根據 `file.type` 判斷為 `'png'` 或 `'jpeg'`，傳入 `addImageBlock` 的 `imageType` 參數
+- `src/app/fill/[id]/page.tsx:112` 根據 `file.type` 判斷為 `'png'` 或 `'jpeg'`，傳入 `addImageBlock` 的 `imageType` 參數
 - `src/components/ImageBlock.tsx:169` 的 `<img>` 標籤天然支援 PNG 透明背景
 
 ---
