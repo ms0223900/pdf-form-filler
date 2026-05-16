@@ -1,8 +1,8 @@
 import { db } from './db';
-import type { Material, PersonalInfo, SignatureData } from './types';
+import type { Material, PersonalInfo, SignatureData, TextMaterialData, ImageMaterialData } from './types';
 
 export async function getMaterials(
-  type?: 'personal_info' | 'signature'
+  type?: 'personal_info' | 'signature' | 'text' | 'image'
 ): Promise<Material[]> {
   if (type) {
     return db.materials.where('type').equals(type).toArray();
@@ -18,8 +18,8 @@ export async function getMaterial(
 
 export async function addMaterial(data: {
   name: string;
-  type: 'personal_info' | 'signature';
-  data: PersonalInfo | SignatureData;
+  type: 'personal_info' | 'signature' | 'text' | 'image';
+  data: PersonalInfo | SignatureData | TextMaterialData | ImageMaterialData;
 }): Promise<number> {
   return db.materials.add({
     name: data.name,

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getMaterials } from '@/lib/materialStore';
-import type { Material } from '@/lib/types';
+import type { Material, TextMaterialData, ImageMaterialData } from '@/lib/types';
 import { MaterialCard } from '@/components/MaterialCard';
 import {
   Sheet,
@@ -18,11 +18,15 @@ import { Library, Loader2, Plus } from 'lucide-react';
 interface MaterialPanelProps {
   onApplyPersonalInfo: (data: Record<string, string>) => void;
   onApplySignature: (dataUrl: string) => void;
+  onApplyText: (text: string) => void;
+  onApplyImage: (dataUrl: string, imageType: 'png' | 'jpeg') => void;
 }
 
 export function MaterialPanel({
   onApplyPersonalInfo,
   onApplySignature,
+  onApplyText,
+  onApplyImage,
 }: MaterialPanelProps) {
   const [open, setOpen] = useState(false);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -46,22 +50,36 @@ export function MaterialPanel({
 
   const handleSelect = useCallback(
     (material: Material) => {
-      if (material.type === 'personal_info') {
-        onApplyPersonalInfo(material.data as Record<string, string>);
-      } else if (material.type === 'signature') {
-        const sig = material.data as { dataUrl: string };
-        if (sig.dataUrl) {
-          onApplySignature(sig.dataUrl);
+      switch (material.type) {
+        case 'personal_info':
+          onApplyPersonalInfo(material.data as Record<string, string>);
+          break;
+        case 'signature': {
+          const sig = material.data as { dataUrl: string };
+          if (sig.dataUrl) onApplySignature(sig.dataUrl);
+          break;
+        }
+        case 'text': {
+          const txt = material.data as TextMaterialData;
+          if (txt.text) onApplyText(txt.text);
+          break;
+        }
+        case 'image': {
+          const img = material.data as ImageMaterialData;
+          if (img.dataUrl) onApplyImage(img.dataUrl, img.imageType);
+          break;
         }
       }
       setOpen(false);
     },
-    [onApplyPersonalInfo, onApplySignature]
+    [onApplyPersonalInfo, onApplySignature, onApplyText, onApplyImage]
   );
 
   const personalInfos = materials.filter((m) => m.type === 'personal_info');
+  const texts = materials.filter((m) => m.type === 'text');
+  const images = materials.filter((m) => m.type === 'image');
   const signatures = materials.filter((m) => m.type === 'signature');
-  const hasAny = personalInfos.length > 0 || signatures.length > 0;
+  const hasAny = materials.length > 0;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -101,6 +119,32 @@ export function MaterialPanel({
                   </h3>
                   <div className="flex flex-col gap-2">
                     {personalInfos.map((m) => (
+                      <MaterialCard key={m.id} material={m} onSelect={handleSelect} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {texts.length > 0 && (
+                <section>
+                  <h3 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    文字
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {texts.map((m) => (
+                      <MaterialCard key={m.id} material={m} onSelect={handleSelect} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {images.length > 0 && (
+                <section>
+                  <h3 className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    圖片
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {images.map((m) => (
                       <MaterialCard key={m.id} material={m} onSelect={handleSelect} />
                     ))}
                   </div>

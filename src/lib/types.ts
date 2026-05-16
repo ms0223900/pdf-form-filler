@@ -28,11 +28,20 @@ export interface PDFDocument {
   type: 'upload' | 'preset';
 }
 
+export interface TextMaterialData {
+  text: string;
+}
+
+export interface ImageMaterialData {
+  dataUrl: string;
+  imageType: 'png' | 'jpeg';
+}
+
 export interface Material {
   id?: number;
   name: string;
-  type: 'personal_info' | 'signature';
-  data: PersonalInfo | SignatureData;
+  type: 'personal_info' | 'signature' | 'text' | 'image';
+  data: PersonalInfo | SignatureData | TextMaterialData | ImageMaterialData;
   createdAt: Date;
 }
 

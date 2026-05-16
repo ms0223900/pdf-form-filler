@@ -198,6 +198,34 @@ export default function FillPage() {
     [currentPage, pageSizes, addImageBlock]
   );
 
+  const handleApplyText = useCallback(
+    (text: string) => {
+      const size = pageSizes[currentPage] || { width: 612, height: 792 };
+      const block: CustomTextBlock = {
+        id: crypto.randomUUID(),
+        type: 'text',
+        page: currentPage,
+        x: size.width / 2 - 100,
+        y: size.height / 2 - 15,
+        width: 200,
+        height: 30,
+        text,
+        fontSize: 12,
+        color: '#000000',
+      };
+      addBlock(block);
+    },
+    [currentPage, pageSizes, addBlock]
+  );
+
+  const handleApplyImage = useCallback(
+    (dataUrl: string, imageType: 'png' | 'jpeg') => {
+      const size = pageSizes[currentPage] || { width: 612, height: 792 };
+      addImageBlock(currentPage, size.width, size.height, dataUrl, imageType);
+    },
+    [currentPage, pageSizes, addImageBlock]
+  );
+
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
@@ -264,6 +292,8 @@ export default function FillPage() {
         <MaterialPanel
           onApplyPersonalInfo={handleApplyPersonalInfo}
           onApplySignature={handleApplySignature}
+          onApplyText={handleApplyText}
+          onApplyImage={handleApplyImage}
         />
 
         <input
