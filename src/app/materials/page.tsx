@@ -1,19 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getMaterials, addMaterial, updateMaterial, deleteMaterial } from '@/lib/materialStore';
-import type { ImageMaterialData, Material, PersonalInfo } from '@/lib/types';
-import { PersonalInfoForm } from '@/components/PersonalInfoForm';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+import { getMaterials, deleteMaterial } from '@/lib/materialStore';
+import type { ImageMaterialData, Material } from '@/lib/types';
+import { PersonalInfoFormDialog } from '@/components/PersonalInfoFormDialog';
+import { TextMaterialForm } from '@/components/TextMaterialForm';
+import { ImageMaterialForm } from '@/components/ImageMaterialForm';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
-  AlertTriangle, ArrowLeft, FileText, Fingerprint, Image as ImageIcon,
-  Library, Loader2, Pencil, Plus, Trash2, Upload, User,
+  ArrowLeft, FileText, Fingerprint, Image as ImageIcon,
+  Library, Pencil, Plus, Trash2, User,
 } from 'lucide-react';
 
 type Tab = 'personal_info' | 'text' | 'image' | 'signature';
@@ -30,21 +28,13 @@ export default function MaterialsPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Personal info form state
+  // Personal info dialog state
   const [formOpen, setFormOpen] = useState(false);
   const [editMaterial, setEditMaterial] = useState<Material | null>(null);
 
-  // Text add form state
+  // Text & image dialog open state (form content managed inside components)
   const [textFormOpen, setTextFormOpen] = useState(false);
-  const [textName, setTextName] = useState('');
-  const [textContent, setTextContent] = useState('');
-
-  // Image add form state
   const [imageFormOpen, setImageFormOpen] = useState(false);
-  const [imageName, setImageName] = useState('');
-  const [imageFile, setImageFile] = useState<{ dataUrl: string; imageType: 'png' | 'jpeg' } | null>(null);
-  const [imageSaving, setImageSaving] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState<Material | null>(null);
@@ -65,7 +55,7 @@ export default function MaterialsPage() {
     loadMaterials();
   }, [loadMaterials]);
 
-  // ---- Personal Info CRUD ----
+  // ---- Personal info CRUD ----
 
   const handleAdd = useCallback(() => {
     setEditMaterial(null);
@@ -76,84 +66,6 @@ export default function MaterialsPage() {
     setEditMaterial(m);
     setFormOpen(true);
   }, []);
-
-  const handleSave = useCallback(
-    async (data: { name: string; fields: Record<string, string> }) => {
-      if (editMaterial) {
-        await updateMaterial(editMaterial.id!, {
-          name: data.name,
-          data: data.fields as PersonalInfo,
-        });
-      } else {
-        await addMaterial({
-          name: data.name,
-          type: 'personal_info',
-          data: data.fields as PersonalInfo,
-        });
-      }
-      setFormOpen(false);
-      setEditMaterial(null);
-      await loadMaterials();
-    },
-    [editMaterial, loadMaterials]
-  );
-
-  // ---- Text CRUD ----
-
-  const handleTextAdd = useCallback(() => {
-    setTextName('');
-    setTextContent('');
-    setTextFormOpen(true);
-  }, []);
-
-  const handleTextSave = useCallback(async () => {
-    if (!textName.trim() || !textContent.trim()) return;
-    await addMaterial({
-      name: textName.trim(),
-      type: 'text',
-      data: { text: textContent.trim() },
-    });
-    setTextFormOpen(false);
-    await loadMaterials();
-  }, [textName, textContent, loadMaterials]);
-
-  // ---- Image CRUD ----
-
-  const handleImageAdd = useCallback(() => {
-    setImageName('');
-    setImageFile(null);
-    setImageFormOpen(true);
-  }, []);
-
-  const handleImageFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      const imageType = file.type === 'image/png' ? 'png' : 'jpeg';
-      setImageSaving(true);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageFile({ dataUrl: reader.result as string, imageType });
-        setImageSaving(false);
-      };
-      reader.readAsDataURL(file);
-      e.target.value = '';
-    },
-    []
-  );
-
-  const handleImageSave = useCallback(async () => {
-    if (!imageName.trim() || !imageFile) return;
-    await addMaterial({
-      name: imageName.trim(),
-      type: 'image',
-      data: imageFile,
-    });
-    setImageFormOpen(false);
-    setImageFile(null);
-    await loadMaterials();
-  }, [imageName, imageFile, loadMaterials]);
 
   // ---- Delete ----
 
@@ -204,7 +116,7 @@ export default function MaterialsPage() {
           return (
             <ItemRow
               key={m.id}
-              icon={
+             icon={
                 isImageType ? (
                   <img
                     src={(m.data as ImageMaterialData).dataUrl}
@@ -246,14 +158,14 @@ export default function MaterialsPage() {
         );
       case 'text':
         return (
-          <Button variant="outline" size="sm" onClick={handleTextAdd} className="mt-1 gap-1">
+          <Button variant="outline" size="sm" onClick={() => setTextFormOpen(true)} className="mt-1 gap-1">
             <Plus className="size-4" />
             新增文字素材
           </Button>
         );
       case 'image':
         return (
-          <Button variant="outline" size="sm" onClick={handleImageAdd} className="mt-1 gap-1">
+          <Button variant="outline" size="sm" onClick={() => setImageFormOpen(true)} className="mt-1 gap-1">
             <Plus className="size-4" />
             新增圖片素材
           </Button>
@@ -266,8 +178,8 @@ export default function MaterialsPage() {
   const handleAddButton = () => {
     switch (tab) {
       case 'personal_info': return handleAdd;
-      case 'text': return handleTextAdd;
-      case 'image': return handleImageAdd;
+      case 'text': return () => setTextFormOpen(true);
+      case 'image': return () => setImageFormOpen(true);
       default: return undefined;
     }
   };
@@ -338,160 +250,29 @@ export default function MaterialsPage() {
         )}
       </div>
 
-      {/* PersonalInfo Form Dialog */}
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editMaterial ? '編輯個人資料' : '新增個人資料'}</DialogTitle>
-          </DialogHeader>
-          <PersonalInfoForm
-            initialData={
-              editMaterial
-                ? { materialName: editMaterial.name, ...(editMaterial.data as Record<string, string>) }
-                : undefined
-            }
-            onSave={handleSave}
-            onCancel={() => {
-              setFormOpen(false);
-              setEditMaterial(null);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Text Add Dialog */}
-      <Dialog open={textFormOpen} onOpenChange={setTextFormOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>新增文字素材</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="textName">素材名稱</Label>
-              <Input
-                id="textName"
-                value={textName}
-                onChange={(e) => setTextName(e.target.value)}
-                placeholder="例如：公司地址"
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="textContent">文字內容</Label>
-              <textarea
-                id="textContent"
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                placeholder="輸入要儲存的文字內容..."
-                rows={4}
-                className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setTextFormOpen(false)}>
-                取消
-              </Button>
-              <Button onClick={handleTextSave} disabled={!textName.trim() || !textContent.trim()}>
-                儲存
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Image Add Dialog */}
-      <Dialog open={imageFormOpen} onOpenChange={setImageFormOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>新增圖片素材</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="imageName">素材名稱</Label>
-              <Input
-                id="imageName"
-                value={imageName}
-                onChange={(e) => setImageName(e.target.value)}
-                placeholder="例如：公司印章"
-                className="text-sm"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>圖片檔案</Label>
-              {imageFile ? (
-                <div className="flex items-center gap-3 rounded-lg border p-3">
-                  <div className="size-16 shrink-0 overflow-hidden rounded border bg-muted">
-                    <img src={imageFile.dataUrl} alt="預覽" className="h-full w-full object-contain" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs text-muted-foreground">
-                      {imageFile.imageType === 'png' ? 'PNG' : 'JPG'} 圖片已選取
-                    </p>
-                  </div>
-                  <Button variant="ghost" size="xs" onClick={() => setImageFile(null)}>
-                    重新選擇
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => imageInputRef.current?.click()}
-                    disabled={imageSaving}
-                    className="gap-2 py-8"
-                  >
-                    {imageSaving ? (
-                      <Loader2 className="size-5 animate-spin" />
-                    ) : (
-                      <Upload className="size-5" />
-                    )}
-                    {imageSaving ? '讀取中...' : '選擇圖片檔案'}
-                  </Button>
-                  <input
-                    ref={imageInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg"
-                    className="hidden"
-                    onChange={handleImageFileChange}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setImageFormOpen(false)}>
-                取消
-              </Button>
-              <Button onClick={handleImageSave} disabled={!imageName.trim() || !imageFile}>
-                儲存
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteTarget !== null} onOpenChange={() => setDeleteTarget(null)}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="size-5 text-destructive" />
-              確認刪除
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            確定要刪除「{deleteTarget?.name}」嗎？此操作無法復原。
-          </p>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              取消
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              刪除
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs */}
+      <PersonalInfoFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        onSaved={loadMaterials}
+        editMaterial={editMaterial}
+      />
+      <TextMaterialForm
+        open={textFormOpen}
+        onOpenChange={setTextFormOpen}
+        onSaved={loadMaterials}
+      />
+      <ImageMaterialForm
+        open={imageFormOpen}
+        onOpenChange={setImageFormOpen}
+        onSaved={loadMaterials}
+      />
+      <DeleteConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        itemName={deleteTarget?.name ?? ''}
+      />
     </div>
   );
 }
