@@ -241,13 +241,13 @@ export async function embedCustomBlocks(
         if (block.watermark?.enabled && cjkFont) {
           const text = block.watermark.text;
           // Estimate font size based on block short side
-          let fontSize = Math.max(4, Math.min(block.width, block.height) / 16);
-          // Measure actual text width and scale down if 45° projection exceeds block
+          let fontSize = Math.max(4, Math.min(block.width, block.height) / 20);
+          // Measure actual text width and scale down if 45° span exceeds block
           const textWidth = cjkFont.widthOfTextAtSize(text, fontSize);
-          const projectedWidth = textWidth * 0.707; // cos(45°) ≈ 0.707
-          const maxWidth = block.width * 0.7;
-          if (projectedWidth > maxWidth) {
-            fontSize *= maxWidth / projectedWidth;
+          const span = (textWidth + fontSize) * 0.707; // cos(45°) ≈ 0.707
+          const maxSpan = Math.min(block.width, block.height) * 0.7;
+          if (span > maxSpan) {
+            fontSize *= maxSpan / span;
           }
           // Position at bottom-left so text crosses block diagonally
           const padX = block.width * 0.08;
@@ -257,7 +257,7 @@ export async function embedCustomBlocks(
             y: block.y + padY,
             size: fontSize,
             font: cjkFont,
-            color: rgb(0.6, 0.6, 0.6),
+            color: rgb(0.8, 0.8, 0.8),
             rotate: degrees(45),
           });
         }

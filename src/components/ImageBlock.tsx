@@ -118,8 +118,8 @@ export function ImageBlock({
       {/* Block body */}
       <div
         className={`relative flex h-full w-full overflow-hidden rounded border-2 bg-white shadow-sm ${selected
-            ? 'border-blue-500 shadow-md'
-            : 'border-dashed border-gray-400 hover:border-gray-500'
+          ? 'border-blue-500 shadow-md'
+          : 'border-dashed border-gray-400 hover:border-gray-500'
           }`}
       >
         {/* Drag handle */}
@@ -147,9 +147,9 @@ export function ImageBlock({
             <span
               className="whitespace-nowrap select-none font-medium"
               style={{
-                color: 'rgba(150,150,150,0.4)',
-                fontSize: Math.max(6, Math.sqrt(overlayW * overlayW + overlayH * overlayH) / 18),
-                transform: 'rotate(45deg)',
+                color: 'rgba(150,150,150,0.7)',
+                fontSize: Math.max(4, Math.min(overlayW, overlayH) / 20),
+                transform: 'rotate(-45deg)',
               }}
             >
               {block.watermark.text}
@@ -162,8 +162,8 @@ export function ImageBlock({
       {selected && (
         <button
           className={`absolute -top-2.5 flex size-5 items-center justify-center rounded-full shadow transition-opacity ${block.watermark?.enabled
-              ? 'bg-red-400 text-white -right-9'
-              : 'bg-gray-300 text-gray-600 -right-9'
+            ? 'bg-red-400 text-white -right-9'
+            : 'bg-gray-300 text-gray-600 -right-9'
             }`}
           onMouseDown={handleToggleWatermark}
           onClick={(e) => e.stopPropagation()}
