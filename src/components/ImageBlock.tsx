@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import type { CustomImageBlock } from '@/lib/types';
 import { GripVertical, Trash2 } from 'lucide-react';
+import { useAspectRatioResize } from '@/hooks/useAspectRatioResize';
 
 interface ImageBlockProps {
   block: CustomImageBlock;
@@ -33,7 +34,7 @@ export function ImageBlock({
   onRemove,
   onDragMouseDown,
 }: ImageBlockProps) {
-  const aspectRatioRef = useRef<number>(1);
+  const aspectRatioRef = useRef<number>(block.width / block.height);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const overlayX = block.x * scale;
@@ -46,6 +47,11 @@ export function ImageBlock({
       aspectRatioRef.current = imgRef.current.naturalWidth / imgRef.current.naturalHeight;
     }
   }, [block.imageData]);
+
+  const { handleResizeStart } = useAspectRatioResize({
+    scale,
+    onUpdate,
+  });
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -70,29 +76,11 @@ export function ImageBlock({
     [block.id, block.x, block.y, block.width, block.height, onDragMouseDown]
   );
 
-  const handleResizeStart = useCallback(
+  const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const startX = e.clientX;
-      const startW = block.width;
-      const ratio = aspectRatioRef.current;
-
-      function handleMouseMove(me: MouseEvent) {
-        const dx = (me.clientX - startX) / scale;
-        const newW = Math.max(60, startW + dx);
-        const newH = newW / ratio;
-        onUpdate(block.id, { width: newW, height: newH });
-      }
-
-      function handleMouseUp() {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      }
-
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      handleResizeStart(e, block.id, e.clientX, block.width, aspectRatioRef.current);
     },
-    [block.id, block.width, scale, onUpdate]
+    [block.id, block.width, handleResizeStart]
   );
 
   return (
@@ -152,7 +140,7 @@ export function ImageBlock({
         className={`absolute -bottom-1.5 -right-1.5 size-3 cursor-se-resize rounded-full border-2 border-blue-400 bg-white ${
           selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
         }`}
-        onMouseDown={handleResizeStart}
+        onMouseDown={handleResizeMouseDown}
         onClick={(e) => e.stopPropagation()}
       />
     </div>
