@@ -17,11 +17,11 @@
   - `deleteMaterial(id: number): Promise<void>` — 刪除素材
 
 **驗收條件**：
-- [ ] `getMaterials` 可依 type 篩選（不傳 type 回傳全部）
-- [ ] `addMaterial` 成功後回傳新 id
-- [ ] `updateMaterial` 只更新傳入的欄位，不影響其他欄位
-- [ ] `deleteMaterial` 成功刪除指定 id 的資料
-- [ ] `npx tsc --noEmit` 無錯誤
+- [x] `getMaterials` 可依 type 篩選（不傳 type 回傳全部）
+- [x] `addMaterial` 成功後回傳新 id
+- [x] `updateMaterial` 只更新傳入的欄位，不影響其他欄位
+- [x] `deleteMaterial` 成功刪除指定 id 的資料
+- [x] `npx tsc --noEmit` 無錯誤
 
 **依賴關係**：
 - US-001（需 IDB schema 與型別）

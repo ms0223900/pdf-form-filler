@@ -8,7 +8,8 @@ import { detectFormFields } from '@/lib/pdfUtils';
 import type { PDFDocument, PDFField } from '@/lib/types';
 import { ExportButton } from '@/components/ExportButton';
 import { useCustomBlocks } from '@/hooks/useCustomBlocks';
-import { ArrowLeft, FileWarning, Image, Type } from 'lucide-react';
+import { SignaturePadDialog } from '@/components/SignaturePadDialog';
+import { ArrowLeft, FileWarning, Image, Pen, Type } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -163,6 +164,13 @@ export default function FillPage() {
     [currentPage, pageSizes, addImageBlock]
   );
 
+  const handleAddSignature = useCallback(
+    (page: number, pageW: number, pageH: number, dataUrl: string) => {
+      addImageBlock(page, pageW, pageH, dataUrl, 'png');
+    },
+    [addImageBlock]
+  );
+
   const handleMeasureOffset = useCallback(
     (id: string, offsetX: number, offsetY: number) => {
       updateBlock(id, { textOffsetX: offsetX, textOffsetY: offsetY });
@@ -237,6 +245,13 @@ export default function FillPage() {
           <Image className="size-4" />
           新增圖片
         </Button>
+
+        <SignaturePadDialog
+          currentPage={currentPage}
+          pageWidth={pageSizes[currentPage]?.width ?? 612}
+          pageHeight={pageSizes[currentPage]?.height ?? 792}
+          onAddSignature={handleAddSignature}
+        />
 
         <input
           ref={fileInputRef}
