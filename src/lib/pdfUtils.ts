@@ -201,11 +201,34 @@ export async function embedCustomBlocks(
       }
 
       if (image) {
+        // Match object-contain behavior: fit within block while preserving aspect ratio
+        const imgAspect = image.width / image.height;
+        const blockAspect = block.width / block.height;
+
+        let drawWidth: number;
+        let drawHeight: number;
+        let drawX: number;
+        let drawY: number;
+
+        if (imgAspect > blockAspect) {
+          // Image is wider → fit by width, center vertically
+          drawWidth = block.width;
+          drawHeight = drawWidth / imgAspect;
+          drawX = block.x;
+          drawY = block.y + (block.height - drawHeight) / 2;
+        } else {
+          // Image is taller → fit by height, center horizontally
+          drawHeight = block.height;
+          drawWidth = drawHeight * imgAspect;
+          drawX = block.x + (block.width - drawWidth) / 2;
+          drawY = block.y;
+        }
+
         page.drawImage(image, {
-          x: block.x,
-          y: block.y,
-          width: block.width,
-          height: block.height,
+          x: drawX,
+          y: drawY,
+          width: drawWidth,
+          height: drawHeight,
         });
       }
     }
