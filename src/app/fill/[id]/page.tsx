@@ -253,7 +253,7 @@ export default function FillPage() {
   return (
     <div className="flex flex-1 flex-col">
       {/* Top bar */}
-      <div className="flex items-center gap-2 border-b px-4 py-2">
+      <div className="sticky top-0 z-[1] flex shrink-0 items-center gap-2 border-b bg-background px-4 py-2">
         <Link
           href="/"
           className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
