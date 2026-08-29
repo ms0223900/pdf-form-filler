@@ -15,11 +15,11 @@
 - 測 `applyPointerDelta`（函式可尚未存在）
 
 **驗收條件**：
-- [ ] 聚焦測試因功能尚未實作而預期紅燈
-- [ ] `move`：`dx/scale` 加到 `x`；`dy/scale` 從 `y` 減去（與現有 `useDragResize` 一致）
-- [ ] `resize`：寬高加上 `dx/scale`、`dy/scale`，且不低於 60×30
-- [ ] `scale !== 1` 時位移按比例換算
-- [ ] `npm test`（或等價指令）可跑、且上述案例因未實作而失敗（非設定錯誤）
+- [x] 聚焦測試因功能尚未實作而預期紅燈
+- [x] `move`：`dx/scale` 加到 `x`；`dy/scale` 從 `y` 減去（與現有 `useDragResize` 一致）
+- [x] `resize`：寬高加上 `dx/scale`、`dy/scale`，且不低於 60×30
+- [x] `scale !== 1` 時位移按比例換算
+- [x] `npm test`（或等價指令）可跑、且上述案例因未實作而失敗（非設定錯誤）
 
 **測試策略**：純測試準備
 > 理由：座標轉換是明確 input/output，先鎖行為再實作。
@@ -28,3 +28,13 @@
 
 **優先級**：P0
 **相關功能**：`useDragResize` 座標換算（US-011）
+
+#### 驗收說明
+
+**整體結論**：PREPARED：預期紅燈測試已建立
+
+> `npx vitest run src/lib/pointerDelta.test.ts` 失敗：`Cannot find module './pointerDelta'`（`applyPointerDelta` 尚未實作）。Vitest 可跑，失敗原因不是設定或測試語法錯誤。
+
+- 路徑：`src/lib/pointerDelta.test.ts`
+- 涵蓋：`move`（`x + dx/scale`、`y - dy/scale`）、`resize`（寬高增量與 60×30 下限）、`scale !== 1`
+- 待 US-001 實作 `src/lib/pointerDelta.ts` 後轉綠
