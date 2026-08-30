@@ -14,11 +14,11 @@
 - 測 `applyPinchScale`（函式可尚未存在）
 
 **驗收條件**：
-- [ ] 聚焦測試因功能尚未實作而預期紅燈
-- [ ] 距離變大 → 寬高變大；距離變小 → 寬高變小
-- [ ] 鎖定長寬比時 `width/height` 比值不變（在下限允許內）
-- [ ] 結果不低於 60×30
-- [ ] 兩指距離為 0 或無效時不產生 NaN／Infinity
+- [x] 聚焦測試因功能尚未實作而預期紅燈
+- [x] 距離變大 → 寬高變大；距離變小 → 寬高變小
+- [x] 鎖定長寬比時 `width/height` 比值不變（在下限允許內）
+- [x] 結果不低於 60×30
+- [x] 兩指距離為 0 或無效時不產生 NaN／Infinity
 
 **測試策略**：純測試準備
 > 理由：pinch 是明確的距離比例計算，適合先紅後綠。
@@ -27,3 +27,13 @@
 
 **優先級**：P0
 **相關功能**：手機雙指縮放區塊
+
+#### 驗收說明
+
+**整體結論**：PREPARED：預期紅燈測試已建立
+
+> `npx vitest run src/lib/pinchScale.test.ts` 失敗：`Cannot find module './pinchScale'`（`applyPinchScale` 尚未實作）。Vitest 可跑，失敗原因不是設定或測試語法錯誤。
+
+- 路徑：`src/lib/pinchScale.test.ts`
+- 涵蓋：距離變大／變小、`lockAspectRatio` 維持比例、60×30 下限、距離 0／NaN 須為有限值
+- 待 US-002 實作 `src/lib/pinchScale.ts` 後轉綠
