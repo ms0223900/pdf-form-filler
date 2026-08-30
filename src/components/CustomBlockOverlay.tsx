@@ -47,11 +47,19 @@ export function CustomBlockOverlay({
     [onUpdateBlock]
   );
 
-  const { handlePointerDown } = useDragResize({
+  const { handlePointerDown: handleTextPointerDown } = useDragResize({
     scale,
     onMove: handleMove,
     onResize: handleResize,
     onDragStart: (id) => onSelectBlock(id),
+  });
+
+  const { handlePointerDown: handleImagePointerDown } = useDragResize({
+    scale,
+    onMove: handleMove,
+    onResize: handleResize,
+    onDragStart: (id) => onSelectBlock(id),
+    lockAspectRatio: true,
   });
 
   const pageBlocks = blocks.filter((b) => b.page === pageIndex);
@@ -70,7 +78,7 @@ export function CustomBlockOverlay({
               onSelect={onSelectBlock}
               onUpdate={onUpdateBlock}
               onRemove={onRemoveBlock}
-              onDragMouseDown={handlePointerDown}
+              onDragMouseDown={handleTextPointerDown}
               onMeasureOffset={onMeasureOffset}
             />
           );
@@ -86,7 +94,7 @@ export function CustomBlockOverlay({
               onSelect={onSelectBlock}
               onUpdate={onUpdateBlock}
               onRemove={onRemoveBlock}
-              onDragMouseDown={handlePointerDown}
+              onDragMouseDown={handleImagePointerDown}
             />
           );
         }

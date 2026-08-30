@@ -1,13 +1,15 @@
 'use client';
 
+import { useCallback, useLayoutEffect, useRef } from 'react';
+import { Droplets, GripVertical, Trash2 } from 'lucide-react';
+
+import type { PointerLikeEvent } from '@/hooks/useDragResize';
 import { useAspectRatioResize } from '@/hooks/useAspectRatioResize';
 import type { CustomImageBlock } from '@/lib/types';
-import { Droplets, GripVertical, Trash2 } from 'lucide-react';
-import { useCallback, useLayoutEffect, useRef } from 'react';
 
 const DEFAULT_WATERMARK_TEXT = '本證件僅供核對身分專用，複製或轉作其他用途無效';
 
-interface ImageBlockProps {
+export interface ImageBlockProps {
   block: CustomImageBlock;
   selected: boolean;
   scale: number;
@@ -16,7 +18,7 @@ interface ImageBlockProps {
   onUpdate: (id: string, updates: Partial<CustomImageBlock>) => void;
   onRemove: (id: string) => void;
   onDragMouseDown: (
-    e: React.MouseEvent,
+    e: PointerLikeEvent,
     blockId: string,
     mode: 'move' | 'resize',
     x: number,
@@ -64,7 +66,7 @@ export function ImageBlock({
   );
 
   const handleDelete = useCallback(
-    (e: React.MouseEvent) => {
+    (e: PointerLikeEvent) => {
       e.stopPropagation();
       onRemove(block.id);
     },
@@ -72,7 +74,7 @@ export function ImageBlock({
   );
 
   const handleToggleWatermark = useCallback(
-    (e: React.MouseEvent) => {
+    (e: PointerLikeEvent) => {
       e.stopPropagation();
       const current = block.watermark;
       if (current?.enabled) {
@@ -90,14 +92,16 @@ export function ImageBlock({
   );
 
   const handleDragStart = useCallback(
-    (e: React.MouseEvent) => {
+    (e: PointerLikeEvent) => {
+      e.stopPropagation();
       onDragMouseDown(e, block.id, 'move', block.x, block.y, block.width, block.height);
     },
     [block.id, block.x, block.y, block.width, block.height, onDragMouseDown]
   );
 
-  const handleResizeMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  const handleResizePointerDown = useCallback(
+    (e: PointerLikeEvent) => {
+      e.stopPropagation();
       handleResizeStart(e, block.id, e.clientX, block.width, aspectRatioRef.current);
     },
     [block.id, block.width, handleResizeStart]
@@ -105,7 +109,7 @@ export function ImageBlock({
 
   return (
     <div
-      className="group absolute"
+      className="group absolute touch-none"
       style={{
         left: overlayX,
         top: overlayY,
@@ -121,12 +125,14 @@ export function ImageBlock({
           ? 'border-blue-500 shadow-md'
           : 'border-dashed border-gray-400 hover:border-gray-500'
           }`}
+        onPointerDown={handleDragStart}
       >
         {/* Drag handle */}
         <button
+          type="button"
           className={`flex shrink-0 cursor-grab items-center justify-center self-stretch bg-black/5 px-0.5 text-gray-500 active:cursor-grabbing ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
             }`}
-          onMouseDown={handleDragStart}
+          onPointerDown={handleDragStart}
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="size-3" />
@@ -161,11 +167,12 @@ export function ImageBlock({
       {/* Watermark toggle */}
       {selected && (
         <button
+          type="button"
           className={`absolute -top-2.5 flex size-5 items-center justify-center rounded-full shadow transition-opacity ${block.watermark?.enabled
             ? 'bg-red-400 text-white -right-9'
             : 'bg-gray-300 text-gray-600 -right-9'
             }`}
-          onMouseDown={handleToggleWatermark}
+          onPointerDown={handleToggleWatermark}
           onClick={(e) => e.stopPropagation()}
           title={block.watermark?.enabled ? '關閉浮水印' : '開啟「機密文件」浮水印'}
         >
@@ -175,9 +182,10 @@ export function ImageBlock({
 
       {/* Delete button */}
       <button
+        type="button"
         className={`absolute -top-2.5 -right-2.5 flex size-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow transition-opacity hover:bg-red-600 ${selected ? 'opacity-100' : 'group-hover:opacity-80'
           }`}
-        onMouseDown={handleDelete}
+        onPointerDown={handleDelete}
         onClick={(e) => e.stopPropagation()}
       >
         <Trash2 className="size-3" />
@@ -187,7 +195,7 @@ export function ImageBlock({
       <div
         className={`absolute -bottom-1.5 -right-1.5 size-3 cursor-se-resize rounded-full border-2 border-blue-400 bg-white ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
           }`}
-        onMouseDown={handleResizeMouseDown}
+        onPointerDown={handleResizePointerDown}
         onClick={(e) => e.stopPropagation()}
       />
     </div>

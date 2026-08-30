@@ -21,7 +21,7 @@
 
 - [x] US-003 將拖曳／縮放 hooks 改為 Pointer Events 並鎖定捲動
 - [x] US-004 文字區塊接上觸控拖曳與縮放
-- [ ] US-005 圖片與簽名區塊接上觸控拖曳與縮放
+- [x] US-005 圖片與簽名區塊接上觸控拖曳與縮放
 
 ### Phase 3 — 驗收
 
@@ -29,9 +29,9 @@
 
 ## 重構掃描記錄
 
-- 已掃描至：US-004（2026-08-30）
+- 已掃描至：US-005（2026-08-30）
 - 已知待觀察熱點：無
-- 本次結論：低風險（掃描範圍僅 US-004；只改 `TextBlock.tsx`，無 churn hotspot／反模式）
+- 本次結論：低風險（掃描範圍僅 US-005；`ImageBlock`＋overlay 第二個 lock-aspect hook，無 churn hotspot／反模式）
 
 ## 依賴鏈摘要
 
@@ -60,7 +60,7 @@ US-005 ─┘
 | US-002 | 實作雙指 pinch 縮放計算 | P0 | US-002-test | Test-First ✅ |
 | US-003 | hooks 改 Pointer Events 並鎖定捲動 | P0 | US-001, US-002 | Test-After ✅ |
 | US-004 | 文字區塊觸控拖曳與縮放 | P0 | US-003 | Test-After ✅ |
-| US-005 | 圖片與簽名區塊觸控拖曳與縮放 | P0 | US-003 | Test-After |
+| US-005 | 圖片與簽名區塊觸控拖曳與縮放 | P0 | US-003 | Test-After ✅ |
 | US-006 | 常見手機尺寸與桌機回歸驗收 | P0 | US-004, US-005 | Test-After |
 
 ## 開發順序
