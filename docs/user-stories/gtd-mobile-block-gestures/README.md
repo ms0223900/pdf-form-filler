@@ -14,7 +14,7 @@
 
 - [x] US-001-test 撰寫 Pointer 位移轉換單元測試（預期紅燈；待實作轉綠）
 - [x] US-001 實作 Pointer 位移轉換
-- [ ] US-002-test 撰寫雙指 pinch 縮放單元測試
+- [x] US-002-test 撰寫雙指 pinch 縮放單元測試（預期紅燈；待實作轉綠）
 - [ ] US-002 實作雙指 pinch 縮放計算
 
 ### Phase 2 — Hook 與區塊接線
@@ -56,7 +56,7 @@ US-005 ─┘
 |------|------|--------|------|----------|
 | US-001-test | 撰寫 Pointer 位移轉換單元測試 | P0 | — | 純測試（預期紅燈）✅ |
 | US-001 | 實作 Pointer 位移轉換 | P0 | US-001-test | Test-First ✅ |
-| US-002-test | 撰寫雙指 pinch 縮放單元測試 | P0 | — | 純測試（預期紅燈） |
+| US-002-test | 撰寫雙指 pinch 縮放單元測試 | P0 | — | 純測試（預期紅燈）✅ |
 | US-002 | 實作雙指 pinch 縮放計算 | P0 | US-002-test | Test-First |
 | US-003 | hooks 改 Pointer Events 並鎖定捲動 | P0 | US-001, US-002 | Test-After |
 | US-004 | 文字區塊觸控拖曳與縮放 | P0 | US-003 | Test-After |
