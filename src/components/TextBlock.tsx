@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import type { PointerLikeEvent } from '@/hooks/useDragResize';
 import type { CustomTextBlock } from '@/lib/types';
 import { GripVertical, Trash2 } from 'lucide-react';
 
-interface TextBlockProps {
+export interface TextBlockProps {
   block: CustomTextBlock;
   selected: boolean;
   scale: number;
@@ -13,7 +14,7 @@ interface TextBlockProps {
   onUpdate: (id: string, updates: Partial<CustomTextBlock>) => void;
   onRemove: (id: string) => void;
   onDragMouseDown: (
-    e: React.MouseEvent,
+    e: PointerLikeEvent,
     blockId: string,
     mode: 'move' | 'resize',
     x: number,
@@ -92,7 +93,7 @@ export function TextBlock({
   );
 
   const handleDelete = useCallback(
-    (e: React.MouseEvent) => {
+    (e: PointerLikeEvent) => {
       e.stopPropagation();
       onRemove(block.id);
     },
@@ -100,14 +101,15 @@ export function TextBlock({
   );
 
   const handleDragStart = useCallback(
-    (e: React.MouseEvent) => {
+    (e: PointerLikeEvent) => {
+      e.stopPropagation();
       onDragMouseDown(e, block.id, 'move', block.x, block.y, block.width, block.height);
     },
     [block.id, block.x, block.y, block.width, block.height, onDragMouseDown]
   );
 
   const handleResizeStart = useCallback(
-    (e: React.MouseEvent) => {
+    (e: PointerLikeEvent) => {
       e.stopPropagation();
       onDragMouseDown(e, block.id, 'resize', block.x, block.y, block.width, block.height);
     },
@@ -117,7 +119,7 @@ export function TextBlock({
   return (
     <div
       ref={blockRef}
-      className="group absolute"
+      className="group absolute touch-none"
       style={{
         left: overlayX,
         top: overlayY,
@@ -134,14 +136,16 @@ export function TextBlock({
             ? 'border-blue-500 shadow-md ring-1 ring-blue-300'
             : 'border-gray-300 hover:border-gray-400'
         }`}
+        onPointerDown={editing ? undefined : handleDragStart}
         onDoubleClick={handleDoubleClick}
       >
         {/* Drag handle */}
         <button
+          type="button"
           className={`flex shrink-0 cursor-grab items-center justify-center self-stretch px-0.5 text-gray-400 active:cursor-grabbing ${
             selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
           }`}
-          onMouseDown={handleDragStart}
+          onPointerDown={handleDragStart}
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="size-3" />
@@ -176,10 +180,11 @@ export function TextBlock({
 
         {/* Delete button */}
         <button
+          type="button"
           className={`absolute -top-2 -right-2 flex size-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 shadow transition-opacity hover:bg-red-600 ${
             selected ? 'opacity-100' : 'group-hover:opacity-80'
           }`}
-          onMouseDown={handleDelete}
+          onPointerDown={handleDelete}
           onClick={(e) => e.stopPropagation()}
         >
           <Trash2 className="size-3" />
@@ -191,7 +196,7 @@ export function TextBlock({
         className={`absolute -bottom-1.5 -right-1.5 size-3 cursor-se-resize rounded-full border-2 border-blue-400 bg-white ${
           selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
         }`}
-        onMouseDown={handleResizeStart}
+        onPointerDown={handleResizeStart}
         onClick={(e) => e.stopPropagation()}
       />
     </div>
