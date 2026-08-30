@@ -19,7 +19,7 @@
 
 ### Phase 2 — Hook 與區塊接線
 
-- [ ] US-003 將拖曳／縮放 hooks 改為 Pointer Events 並鎖定捲動
+- [x] US-003 將拖曳／縮放 hooks 改為 Pointer Events 並鎖定捲動
 - [ ] US-004 文字區塊接上觸控拖曳與縮放
 - [ ] US-005 圖片與簽名區塊接上觸控拖曳與縮放
 
@@ -29,9 +29,9 @@
 
 ## 重構掃描記錄
 
-- 已掃描至：US-002（2026-08-30）
+- 已掃描至：US-003（2026-08-30）
 - 已知待觀察熱點：無
-- 本次結論：低風險（僅新增 `src/lib/pinchScale.ts`，無 churn hotspot／反模式）
+- 本次結論：低風險（掃描範圍僅 US-003；hooks／overlay 首次改動，無 churn hotspot／反模式）
 
 ## 依賴鏈摘要
 
@@ -58,7 +58,7 @@ US-005 ─┘
 | US-001 | 實作 Pointer 位移轉換 | P0 | US-001-test | Test-First ✅ |
 | US-002-test | 撰寫雙指 pinch 縮放單元測試 | P0 | — | 純測試（預期紅燈）✅ |
 | US-002 | 實作雙指 pinch 縮放計算 | P0 | US-002-test | Test-First ✅ |
-| US-003 | hooks 改 Pointer Events 並鎖定捲動 | P0 | US-001, US-002 | Test-After |
+| US-003 | hooks 改 Pointer Events 並鎖定捲動 | P0 | US-001, US-002 | Test-After ✅ |
 | US-004 | 文字區塊觸控拖曳與縮放 | P0 | US-003 | Test-After |
 | US-005 | 圖片與簽名區塊觸控拖曳與縮放 | P0 | US-003 | Test-After |
 | US-006 | 常見手機尺寸與桌機回歸驗收 | P0 | US-004, US-005 | Test-After |

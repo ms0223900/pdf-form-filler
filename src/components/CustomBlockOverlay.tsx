@@ -47,7 +47,7 @@ export function CustomBlockOverlay({
     [onUpdateBlock]
   );
 
-  const { handleMouseDown } = useDragResize({
+  const { handlePointerDown } = useDragResize({
     scale,
     onMove: handleMove,
     onResize: handleResize,
@@ -70,7 +70,7 @@ export function CustomBlockOverlay({
               onSelect={onSelectBlock}
               onUpdate={onUpdateBlock}
               onRemove={onRemoveBlock}
-              onDragMouseDown={handleMouseDown}
+              onDragMouseDown={handlePointerDown}
               onMeasureOffset={onMeasureOffset}
             />
           );
@@ -86,7 +86,7 @@ export function CustomBlockOverlay({
               onSelect={onSelectBlock}
               onUpdate={onUpdateBlock}
               onRemove={onRemoveBlock}
-              onDragMouseDown={handleMouseDown}
+              onDragMouseDown={handlePointerDown}
             />
           );
         }
