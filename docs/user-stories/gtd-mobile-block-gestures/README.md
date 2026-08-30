@@ -19,7 +19,7 @@
 
 ### Phase 2 — Hook 與區塊接線
 
-- [ ] US-003 將拖曳／縮放 hooks 改為 Pointer Events 並鎖定捲動
+- [x] US-003 將拖曳／縮放 hooks 改為 Pointer Events 並鎖定捲動
 - [ ] US-004 文字區塊接上觸控拖曳與縮放
 - [ ] US-005 圖片與簽名區塊接上觸控拖曳與縮放
 
@@ -29,9 +29,9 @@
 
 ## 重構掃描記錄
 
-- 已掃描至：US-002（2026-08-30）
+- 已掃描至：US-003（2026-08-30）
 - 已知待觀察熱點：無
-- 本次結論：低風險（僅新增 `src/lib/pinchScale.ts`，無 churn hotspot／反模式）
+- 本次結論：低風險（掃描範圍僅 US-003；hooks／overlay 首次改動，無 churn hotspot／反模式）
 
 ## 依賴鏈摘要
 
