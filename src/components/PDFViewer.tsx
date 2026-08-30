@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Viewer,
   Worker,
@@ -10,6 +10,7 @@ import {
   type RenderPageProps,
 } from '@react-pdf-viewer/core';
 import { Button } from '@/components/ui/button';
+import { shouldRenderPdfViewerLayer } from '@/lib/pdfViewerLayers';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 
 export interface PageOverlayProps {
@@ -28,6 +29,23 @@ interface PDFViewerProps {
 
 const WORKER_URL =
   'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+function MarkPageRenderedWhenCanvasReady({
+  canvasLayerRendered,
+  pageIndex,
+  markRendered,
+}: {
+  canvasLayerRendered: boolean;
+  pageIndex: number;
+  markRendered: (pageIndex: number) => void;
+}) {
+  useEffect(() => {
+    if (canvasLayerRendered) {
+      markRendered(pageIndex);
+    }
+  }, [canvasLayerRendered, pageIndex, markRendered]);
+  return null;
+}
 
 export function PDFViewer({ file, renderOverlay, onScaleChange, onPageChange: onParentPageChange }: PDFViewerProps) {
   const [fileData, setFileData] = useState<Uint8Array | null>(null);
@@ -103,11 +121,24 @@ export function PDFViewer({ file, renderOverlay, onScaleChange, onPageChange: on
           height: props.height,
         }}
       >
-        <div {...props.canvasLayer.attrs}>{props.canvasLayer.children}</div>
-        <div {...props.textLayer.attrs}>{props.textLayer.children}</div>
-        <div {...props.annotationLayer.attrs}>
-          {props.annotationLayer.children}
-        </div>
+        {shouldRenderPdfViewerLayer('canvas') && (
+          <div {...props.canvasLayer.attrs}>{props.canvasLayer.children}</div>
+        )}
+        {shouldRenderPdfViewerLayer('text') && (
+          <div {...props.textLayer.attrs}>{props.textLayer.children}</div>
+        )}
+        {shouldRenderPdfViewerLayer('annotation') && (
+          <div {...props.annotationLayer.attrs}>
+            {props.annotationLayer.children}
+          </div>
+        )}
+        {!shouldRenderPdfViewerLayer('text') && (
+          <MarkPageRenderedWhenCanvasReady
+            canvasLayerRendered={props.canvasLayerRendered}
+            pageIndex={props.pageIndex}
+            markRendered={props.markRendered}
+          />
+        )}
         {overlay && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
             {overlay}
