@@ -13,7 +13,7 @@
 ### Phase 1 — 座標／縮放純邏輯
 
 - [x] US-001-test 撰寫 Pointer 位移轉換單元測試（預期紅燈；待實作轉綠）
-- [ ] US-001 實作 Pointer 位移轉換
+- [x] US-001 實作 Pointer 位移轉換
 - [ ] US-002-test 撰寫雙指 pinch 縮放單元測試
 - [ ] US-002 實作雙指 pinch 縮放計算
 
@@ -26,6 +26,12 @@
 ### Phase 3 — 驗收
 
 - [ ] US-006 常見手機尺寸與桌機回歸驗收
+
+## 重構掃描記錄
+
+- 已掃描至：US-001（2026-08-29）
+- 已知待觀察熱點：無
+- 本次結論：低風險（僅新增 `src/lib/pointerDelta.ts`，無 churn hotspot／反模式）
 
 ## 依賴鏈摘要
 
@@ -49,7 +55,7 @@ US-005 ─┘
 | 編號 | 標題 | 優先級 | 依賴 | 測試策略 |
 |------|------|--------|------|----------|
 | US-001-test | 撰寫 Pointer 位移轉換單元測試 | P0 | — | 純測試（預期紅燈）✅ |
-| US-001 | 實作 Pointer 位移轉換 | P0 | US-001-test | Test-First |
+| US-001 | 實作 Pointer 位移轉換 | P0 | US-001-test | Test-First ✅ |
 | US-002-test | 撰寫雙指 pinch 縮放單元測試 | P0 | — | 純測試（預期紅燈） |
 | US-002 | 實作雙指 pinch 縮放計算 | P0 | US-002-test | Test-First |
 | US-003 | hooks 改 Pointer Events 並鎖定捲動 | P0 | US-001, US-002 | Test-After |
